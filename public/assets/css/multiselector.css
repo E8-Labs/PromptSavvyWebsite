@@ -1,0 +1,206 @@
+
+select[data-multi-select-plugin] {
+    display: none !important;
+}
+
+.multi-select-component {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    height: auto;
+    width: 100%;
+    padding: 24px 20px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    padding-bottom: 0px;
+    color: #fff;
+    background-color: #050A08;
+    border: 1px solid #00C28C;
+    border-radius: 20px;
+}
+.long_select .multi-select-component{
+    height: 60px;
+}
+
+
+.multi-select-component .btn-group {
+    display: none !important;
+}
+
+.multiselect-native-select .multiselect-container {
+    width: 100%;
+}
+
+.selected-wrapper {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    display: inline-block;
+    background-color: #E6E6E6;
+    white-space: nowrap;
+    margin: 1px 5px 0px 0;
+    height: 22px;
+    vertical-align: middle;
+    cursor: default;
+}
+
+.selected-wrapper .selected-label {
+    max-width: 514px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 4px;
+    vertical-align: top;
+    color: #0D0D0D;
+    line-height: 23px;
+}
+.selected-wrapper .selected-close {
+    display: inline-block;
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 1.59em;
+    margin-left: 5px;
+    padding-bottom: 10px;
+    height: 100%;
+    vertical-align: middle;
+    padding-right: 4px;
+    opacity: 1;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    font-weight: 700;
+}
+
+.search-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.search-container .selected-input {
+    background: none;
+    border: 0;
+    height: 20px;
+    width: 60px;
+    padding: 0;
+    margin-bottom: 6px;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.search-container .selected-input:focus {
+    outline: none;
+}
+
+.dropdown-icon.active {
+    transform: rotateX(180deg)
+}
+
+.search-container .dropdown-icon {
+    display: inline-block;
+    padding: 10px 5px;
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    width: 10px;
+    height: 10px;
+    border: 0 !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    transform: translateY(-50%);
+}
+.search-container .dropdown-icon::after{
+    position: absolute;
+    right: 0px;
+    top: -2px;
+    transition: all 0.2s ease-in-out;
+    font-family: "Font Awesome 5 Pro";
+    font-weight: 500;
+    content: "\f107";
+    color: #00C28C;
+    font-size: 18px;
+}
+.search-container ul {
+    position: absolute;
+    list-style: none;
+    padding: 0;
+    z-index: 3;
+    margin-top: 40px;
+    width: 100%;
+    right: 0px;
+    background: #fff;
+    border-top: none;
+    transition: .3s;
+    border-bottom: none;
+}
+
+.search-container ul :focus {
+    outline: none;
+}
+
+.search-container ul li {
+    display: block;
+    text-align: left;
+    padding: 12px 25px 12px 15px;
+    font-size: 14px;
+    min-height: 31px;
+    color: #000;
+}
+
+
+
+
+.search-container ul li:hover.not-cursor {
+    cursor: default;
+}
+
+.search-container ul li:hover {
+    color: #fff;
+    background-color: #1B2E29;
+    cursor: pointer;
+}
+
+/* Adding scrool to select options */
+.autocomplete-list {
+    max-height: 175px;
+    overflow-y: auto;
+}
+/*
+ *  STYLE 3
+ */
+
+ .autocomplete-list::-webkit-scrollbar-track
+ {
+     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+     background-color: #F5F5F5;
+ }
+ 
+ .autocomplete-list::-webkit-scrollbar
+ {
+     width: 6px;
+     background-color: #F5F5F5;
+ }
+ 
+ .autocomplete-list::-webkit-scrollbar-thumb
+ {
+     background-color: #00C28C;
+ }
+
+ .dropdown-menu::-webkit-scrollbar-track
+ {
+     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+     background-color: #F5F5F5;
+ }
+ 
+ .dropdown-menu::-webkit-scrollbar
+ {
+     width: 6px;
+     background-color: #F5F5F5;
+ }
+ 
+ .dropdown-menu::-webkit-scrollbar-thumb
+ {
+     background-color: #00C28C;
+ }

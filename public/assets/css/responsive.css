@@ -1,0 +1,101 @@
+/* XL Device :1200px. */
+@media (min-width: 1200px) and (max-width: 1449px) {
+    .header_left_wrap {
+        width: 75%;
+    }
+    .header-right-last {
+        width: 25%;
+    }
+    .prompt-filter-left a {
+        margin-right: 0;
+    }
+    .profile_box {
+        margin-left: 65px;
+    }
+    .version_switcher {
+        margin-right: 0;
+    }
+    .support_list {
+        margin-top: 95px;
+    }
+    .sidebar_area ul li a {
+        padding: 15px 15px;
+    }
+
+}
+
+
+
+
+@media (min-width: 1200px) and (max-width: 1366px) {
+    .header_left_wrap {
+        width: 75%;
+    }
+    .header-right-last {
+        width: 25%;
+    }
+    .prompt-filter-left a {
+        margin-right: 0;
+    }
+    .profile_box {
+        margin-left: 65px;
+    }
+    .version_switcher {
+        margin-right: 0;
+    }
+    .support_list {
+        margin-top: 95px;
+    }
+    .sidebar_area ul li a {
+        padding: 15px 15px;
+    }
+
+}
+
+
+
+
+
+
+
+/* LG Device :992px. */
+@media (min-width: 992px) and (max-width: 1200px) {
+
+
+
+}
+ 
+
+
+
+
+
+
+/* SM Small Device :320px. */
+@media only screen and (max-width: 767px) {
+   
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+/* SM Small Device :550px. */
+@media only screen and (min-width: 576px) and (max-width: 767px) {
+
+  
+    
+    
+ 
+}
