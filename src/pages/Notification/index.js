@@ -1,4 +1,5 @@
 import React, { useEffect,useState } from 'react';
+import { Link } from 'react-router-dom';
 import { fetch_user_profile_information,fetch_prompts_data } from '../../service/Apis/api';
 import Header from '../../include/header/header';
 import UserProfileArea from '../../components/userprofile/userprofilearea';
@@ -77,40 +78,40 @@ const Notification = () => {
                                         <div className="recent-notification">
                                             <ul>
                                                 <li className="active">
-                                                    <a href="">
+                                                    <Link to="#">
                                                         You have a new subscriber! 🎉
                                                         <p>2days ago</p>
-                                                    </a>
+                                                    </Link>
                                                 </li>
                                                 <li>
-                                                    <a href="">
+                                                    <Link to="#">
                                                         Congrats! You made #$# from #promptname#
                                                         <p>2days ago</p>
-                                                    </a>
+                                                    </Link>
                                                 </li>
                                                 <li>
-                                                    <a href="">
+                                                    <Link to="#">
                                                         Check it out! New prompt released by #username#
                                                         <p>2days ago</p>
-                                                    </a>
+                                                    </Link>
                                                 </li>
                                                 <li className="seen_message">
-                                                    <a href="">
+                                                    <Link to="#">
                                                         Your prompt is paused by admin
                                                         <p>2days ago</p>
-                                                    </a>
+                                                    </Link>
                                                 </li>
                                                 <li className="seen_message">
-                                                    <a href="">
+                                                    <Link to="#">
                                                         New message
                                                         <p>2days ago</p>
-                                                    </a>
+                                                    </Link>
                                                 </li>
                                                 <li className="seen_message">
-                                                    <a href="">
+                                                    <Link to="#">
                                                         Your prompt is paused by admin
                                                         <p>2days ago</p>
-                                                    </a>
+                                                    </Link>
                                                 </li>
                                             </ul>
                                         </div>

@@ -1,11 +1,12 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 const TopMenu = () => {
     return (
         <>
             <div className="sidebar_menu">
                 <ul>
-                    <li><a href=""><img src="../assets/img/Category.svg" alt="" />Dashboard</a></li>
-                    <li><a href=""><img src="../assets/img/chatgpt.svg" alt="" />ChatGPT</a></li>
+                    <li><Link to="#"><img src="../assets/img/Category.svg" alt="" />Dashboard</Link></li>
+                    <li><Link to="#"><img src="../assets/img/chatgpt.svg" alt="" />ChatGPT</Link></li>
                 </ul>
             </div>
         </>

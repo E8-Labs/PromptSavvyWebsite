@@ -279,7 +279,7 @@ const MyProfile = () => {
                                                     </li>
                                                     <li className="nav-item NavProfileManagement" role="presentation">
                                                     <button className="nav-link" id="pills-ProfileManagement-tab" data-bs-toggle="pill" data-bs-target="#pills-ProfileManagement" type="button" role="tab" aria-controls="pills-ProfileManagement" aria-selected="false"><img src="../assets/img/settting-green.svg" alt="" /> Profile Management</button>
-                                                    <button className="nav-link" id="pills-AiPersonality-tab" data-bs-toggle="pill" data-bs-target="#pills-AiPersonality" type="button" role="tab" aria-controls="pills-AiPersonality" aria-selected="false"><img src="../assets/img/settting-green.svg" alt="" />AI Personality</button>
+                                                    <button className="nav-link" id="pills-AiPersonality-tab" data-bs-toggle="pill" data-bs-target="#pills-AiPersonality" type="button" role="tab" aria-controls="pills-AiPersonality" aria-selected="false"><img src="../assets/img/chatgpt.svg" alt="" />AI Personality</button>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -290,13 +290,13 @@ const MyProfile = () => {
                                     <div className="col-lg-12">
                                         <div className="tab-content" id="pills-tabContent">
                                             <div className="tab-pane fade show active" id="pills-MyPrompts" role="tabpanel" aria-labelledby="pills-MyPrompts-tab">
-                                            <div className="row">
-                                                <div className="col-lg-12">
-                                                    <div className="infp-title">
-                                                        <h4>Profile Management</h4>
+                                                {/* <div className="row">
+                                                    <div className="col-lg-12">
+                                                        <div className="infp-title">
+                                                            <h4>Profile Management</h4>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </div>
+                                                </div> */}
                                                 <div className="row">                                                
                                                     {UserPrompts.map((item, index) => (
                                                         <PromptGrid PublicPrompt={item} key={index} UserImage={UserImage} handleExceptionError={handleExceptionError} handleExceptionSuccessMessages={handleExceptionSuccessMessages} />
@@ -307,20 +307,13 @@ const MyProfile = () => {
                                                 <div className="ProfileManagement-wrapper">
                                                     <div className="row">
                                                         <div className="col-lg-12">
-                                                            <div className="infp-title">
-                                                                <h4>Profile Management</h4>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="row">
-                                                        <div className="col-lg-12">
                                                             <div className="personal-info-tabcontent">
                                                                 <div className="v-tablist">
                                                                     <div className="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                                                                         <button className="nav-link active" id="v-pills-Personal-tab" data-bs-toggle="pill" data-bs-target="#v-pills-Personal" type="button" role="tab" aria-controls="v-pills-Personal" aria-selected="true">Personal Information</button>
                                                                     </div>
                                                                     <div className="logout-option">
-                                                                        <a href="" onClick={logout}>Logout</a>
+                                                                        <Link href="#" onClick={logout}>Logout</Link>
                                                                     </div>
                                                                 </div>
                                                                 <div className="v-tab-contents">
