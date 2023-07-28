@@ -43,7 +43,7 @@ const CommunityList = (props) => {
                     <div className="offcanvas-body p-0" id="scrollableDiv2">
                         <InfiniteScroll
                             dataLength={props.FollowingFollowersUserList.length}
-                            next={fetchMoreCommunity}
+                            next={fetchMoreCommunity.bind(this)}
                             hasMore={true}
                             loader={''}
                             scrollableTarget="scrollableDiv2"

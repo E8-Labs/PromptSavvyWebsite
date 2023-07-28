@@ -346,7 +346,7 @@ const MyProfile = () => {
                 <main className="main_content-start" id="scrollableDiv" style={{ height: '100vh', overflow: "auto" }}>
                 <InfiniteScroll
                     dataLength={UserPrompts.length}
-                    next={fetchMoreUserPrompts}
+                    next={fetchMoreUserPrompts.bind(this)}
                     hasMore={true}
                     loader={''}
                     scrollableTarget="scrollableDiv"

@@ -6,13 +6,17 @@ import UserProfileArea from '../../components/userprofile/userprofilearea';
 import Footer from '../../include/footer';
 import InfiniteScroll from "react-infinite-scroll-component";
 
+import ErrorSnackbar from '../../components/ErrorSnackbar';
+import SuccessSnackbar from '../../components/SuccessSnackbar';
+
 import moment from 'moment-timezone';
 moment.tz.setDefault('Etc/UTC');
 
-var notification_list_page = 0;
+var notification_list_page = 1;
 const Notification = () => {
     // const location = useLocation();
     const [UserName, setUserName] = useState('');
+    const [UserImage, setUserImage] = useState('');
     const [FollowersLength, setFollowersLength] = useState(0);
     const [SocialLinks, setSocialLinks] = useState([]);
     const [UserPrompts, setUserPrompts] = useState([]);
@@ -20,10 +24,40 @@ const Notification = () => {
     const [CurrentMongodbUserID, setCurrentMongodbUserID] = useState('');
 
     const [Notifications, setNotifications] = useState([]);
+
+    const [ExceptionError, setExceptionError] = useState([]);
+    const [successMessages, setSuccessMessages] = useState([]);
+
+    function handleExceptionError(error) {
+        setExceptionError(ExceptionError => [
+            ...ExceptionError,
+            { id: Date.now(), message: error.message },
+        ]);
+    }
+
+    function handleExceptionSuccessMessages(msg) {
+        setSuccessMessages(successMessages => [
+            ...successMessages,
+            { id: Date.now(), message: msg },
+        ]);
+    }
+
+    function clearErrors(id) {
+        setExceptionError(prevMessages =>
+            prevMessages.filter(msg => msg.id !== id)
+        );
+    }
+    function clearSuccess(id) {
+        setSuccessMessages(prevMessages =>
+          prevMessages.filter(msg => msg.id !== id)
+        );
+    }
+
     
     async function unfollowers_request(){ }
     async function followers_request(){}
     async function ShowCommunity(){}
+    
 
     async function fetchMoreNotification(){
         try {
@@ -36,8 +70,7 @@ const Notification = () => {
                 }
             }
         } catch (error) {
-            console.log('error',error)
-            // handleExceptionError(error);
+            handleExceptionError(error);
             return null;
         }
     }
@@ -61,17 +94,25 @@ const Notification = () => {
                             if(data.profile_info.social_links){
                                 setSocialLinks(data.profile_info.social_links);
                             }
+                            if(data.profile_info.image){
+                                setUserImage(data.profile_info.image);
+                            }
                         }else{
                         }
                     }
-                    fetchMoreNotification();
+                    const res1 = await fetch_loggedin_user_notifications(localStorage.getItem('mongodb_userid'),notification_list_page);
+                    if(res1.data){
+                        if(res1.data.statusCode == 200){
+                            var data1 = JSON.parse(res1.data.body);
+                            setNotifications([...Notifications, ...data1.notifications]);
+                        }
+                    }
                 }
             } catch (error) {
-                console.log('error',error)
+                handleExceptionError(error);
             }
         }
-        fetchData();
-        
+        fetchData();        
 
         document.body.classList.add('body_class');
         return () => {
@@ -81,11 +122,13 @@ const Notification = () => {
 
     return (
         <>
+            <ErrorSnackbar errorMessages={ExceptionError} onClearErrors={clearErrors} />
+            <SuccessSnackbar successMessages={successMessages} onclearSuccess={clearSuccess} />
             <Header />
                 <main className="main_content-start" id="scrollableDiv" style={{ height: '100vh', overflow: "auto" }}>
                     <InfiniteScroll
                         dataLength={Notifications.length}
-                        next={fetchMoreNotification}
+                        next={fetchMoreNotification.bind(this)}
                         hasMore={true}
                         loader={''}
                         scrollableTarget="scrollableDiv"
@@ -98,6 +141,7 @@ const Notification = () => {
                             unfollowers_request={unfollowers_request}
                             followers_request={followers_request}
                             ShowCommunity={ShowCommunity}
+                            UserImage={UserImage}
                         />
 
                         <section className="prompt-area">
