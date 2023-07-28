@@ -1,7 +1,15 @@
 import React, { useEffect,useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import InfiniteScroll from "react-infinite-scroll-component";
-import { fetch_user_profile_information,fetch_prompts_data, editing_user_profile_information,followers_list,following_list,search_followers,search_following } from '../../service/Apis/api';
+import {
+    fetch_user_profile_information,
+    fetching_prompts_of_any_userid,
+    editing_user_profile_information,
+    followers_list,following_list,
+    search_followers,
+    search_following,
+    adding_user_to_wishlist
+} from '../../service/Apis/api';
 import Header from '../../include/header/header';
 import UserProfileArea from '../../components/userprofile/userprofilearea';
 import PromptGrid from '../../components/prompt/promptgrid';
@@ -10,6 +18,8 @@ import CommunityList from '../../components/community/community_list';
 import ErrorSnackbar from '../../components/ErrorSnackbar';
 import SuccessSnackbar from '../../components/SuccessSnackbar';
 
+var prompt_list_page = 1;
+var community_list_page = 1;
  
 const MyProfile = () => {
     const fileInputRef = useRef(null);
@@ -38,6 +48,8 @@ const MyProfile = () => {
     const [ShowSaveButton, setShowSaveButton] = useState(false);
     const [ExceptionError, setExceptionError] = useState([]);
     const [successMessages, setSuccessMessages] = useState([]);
+    const [WaitListEmail, setWaitListEmail] = useState('');
+    
     
 
     async function unfollowers_request(){ }
@@ -71,9 +83,23 @@ const MyProfile = () => {
 
     async function Save_Information(){
         try {
+            if(FormName == ''){
+                handleExceptionError({message:'Username is required'});
+                return false;  
+            }
+            if(FormEmail == ''){
+                handleExceptionError({message:'Email is required'});
+                return false;  
+            }
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if(!emailRegex.test(FormEmail)){
+                handleExceptionError({message:'Please enter valid email address'});
+                return false;
+            }
             const res = await editing_user_profile_information(
                 localStorage.getItem('mongodb_userid'),
-                FormEmail,FormName,
+                FormEmail,
+                FormName,
                 UserImage,
                 FormInstagramLink,
                 FormYoutubeLink,
@@ -93,6 +119,33 @@ const MyProfile = () => {
             return null;
         }
     }
+    async function SendRequestWaitList(){
+        try {
+            if(WaitListEmail == ''){
+                handleExceptionError({message:'Email is required'});
+                return false;  
+            }
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if(!emailRegex.test(WaitListEmail)){
+                handleExceptionError({message:'Please enter valid email address'});
+                return false;
+            }
+            /*
+            const res = await adding_user_to_wishlist(
+                WaitListEmail
+            );
+            if(res.data.statusCode == 200){
+                var data = JSON.parse(res.data.body);
+                handleExceptionSuccessMessages(data.message)
+                setWaitListEmail('');
+            }*/
+        } catch (error) {
+            handleExceptionError(error);
+            return null;
+        }
+    }
+
+    
 
     function handleFileChangeOpen(event){
         fileInputRef.current.click();
@@ -115,7 +168,8 @@ const MyProfile = () => {
 
     async function fetchMoreUserPrompts(){
         try {
-            const res1 = await fetch_prompts_data(localStorage.getItem('mongodb_userid'),'0');
+            prompt_list_page++;
+            const res1 = await fetching_prompts_of_any_userid(localStorage.getItem('mongodb_userid'),localStorage.getItem('mongodb_userid'),'recent', prompt_list_page );
             if(res1.data.statusCode){
                 var data1 = JSON.parse(res1.data.body);
                 setUserPrompts([...UserPrompts, ...data1.user_prompts]);
@@ -137,10 +191,11 @@ const MyProfile = () => {
 
     async function ActivityFollowingFollowersChange(active){
         try {
+            community_list_page = 1
             setFollowingFollowerSearchAlgo('');
             setActivityFollowingFollowers(active);
             if(active == 'followers'){
-                const res = await followers_list(localStorage.getItem('mongodb_userid'),0);
+                const res = await followers_list(localStorage.getItem('mongodb_userid'),community_list_page);
                 if(res.data.statusCode == 200){
                     var data = JSON.parse(res.data.body);
                     setFollowingFollowersUserList(data.subscribers);
@@ -160,6 +215,7 @@ const MyProfile = () => {
 
     async function FollowingFollowersSearch(value){
         try {
+            community_list_page = 1
             setFollowingFollowerSearchAlgo(value);        
             if(ActivityFollowingFollowers == 'followers'){
                 const res = await search_followers(localStorage.getItem('mongodb_userid'),value,0);
@@ -224,7 +280,7 @@ const MyProfile = () => {
                         }
                     }
 
-                    const res1 = await fetch_prompts_data(localStorage.getItem('mongodb_userid'),'0');
+                    const res1 = await fetching_prompts_of_any_userid(localStorage.getItem('mongodb_userid'),localStorage.getItem('mongodb_userid'),'recent', prompt_list_page );
                     if(res1.data.statusCode){
                         var data1 = JSON.parse(res1.data.body);
                         setUserPrompts(data1.user_prompts)
@@ -242,6 +298,44 @@ const MyProfile = () => {
           document.body.classList.remove('gtp_page');
         };
     }, []);
+
+    async function fetchMoreCommunity(){
+        try {
+            community_list_page++;
+            if(FollowingFollowerSearchAlgo != ''){
+                if(ActivityFollowingFollowers == 'followers'){
+                    const res = await search_followers(localStorage.getItem('mongodb_userid'),FollowingFollowerSearchAlgo,community_list_page);
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.followers_search]);
+                    }
+                }else{
+                    const res = await search_following(localStorage.getItem('mongodb_userid'),FollowingFollowerSearchAlgo,community_list_page);
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following_search]);
+                    }
+                }                
+            }else{
+                if(ActivityFollowingFollowers == 'followers'){
+                    const res = await followers_list(localStorage.getItem('mongodb_userid'),community_list_page);
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.subscribers]);
+                    }
+                }else{
+                    const res = await following_list(localStorage.getItem('mongodb_userid'),community_list_page);
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following]);
+                    }
+                }
+            }
+        }catch (error) {
+            handleExceptionError(error);
+            return null;
+        }
+    }
 
 
     return (
@@ -434,105 +528,15 @@ const MyProfile = () => {
                                                                 <img src="../assets/img/ai-6.png" className="ai-9" alt="" />
                                                                 <img src="../assets/img/ai-4.png" className="ai-10" alt="" />
                                                             </div>
-                                                            <div className="ai-create-bottom mt-5 text-center">
-                                                                <button className="custom-btn-2 continue__btn step_btn_one"><img src="../assets/img/Document-white.svg" alt="" />Create Personality</button>
+                                                            <div className="ai-create-bottom mt-5 text-center join_wait_list">
+                                                                <div>
+                                                                    <div>
+                                                                        <label>Join the waitlist</label>
+                                                                        <input type="email" onChange={e => setWaitListEmail(e.target.value)} name="" value={WaitListEmail} placeholder="Email Address" />
+                                                                    </div>
+                                                                    <button onClick={SendRequestWaitList.bind(this)} className="custom-btn-2">Join the waitlist</button>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        
-                                                        <div className="step">
-                                                                <div className="step-ai-wrapper">
-                                                                    <div className="create-box-title">
-                                                                        <h4>What is your AI Personality</h4>
-                                                                    </div>
-                                                                    <div className="ai_textarea">
-                                                                        <label htmlFor="">AI Personality</label>
-                                                                        <textarea name="" id="" cols="30" rows="10" placeholder="Content goes here"></textarea>
-                                                                    </div>
-                                                                    <div className="ai-create-bottom mt-5 text-center">
-                                                                        <button className="custom-btn-2 continue__btn step_btn_two">Continue</button>
-                                                                    </div>
-                                                                </div>
-                                                        </div>
-
-                                                        <div className="step">
-                                                                <div className="step-ai-wrapper">
-                                                                    <div className="create-box-title">
-                                                                        <h4>Tell us about yourself</h4>
-                                                                    </div>
-                                                                    <div className="ai_textarea">
-                                                                        <label htmlFor="">What topics do you talk about</label>
-                                                                        <textarea name="" id="" cols="30" rows="10" placeholder="I specialize in YouTube Automation"></textarea>
-                                                                    </div>
-                                                                    <div className="ai-create-bottom mt-5 text-center">
-                                                                        <button className="custom-btn-2 continue__btn step_btn_three">Continue</button>
-                                                                    </div>
-                                                                </div>
-                                                        </div>
-
-                                                        <div className="step">
-                                                                <div className="step-ai-wrapper">
-                                                                    <div className="create-box-title">
-                                                                        <h4>Social Links</h4>
-                                                                    </div>
-                                                                    <div className="social_links">
-                                                                        <div className="linl_filed">
-                                                                            <span><i className="far fa-globe"></i></span>
-                                                                            <input type="text" placeholder="Website" />
-                                                                        </div>
-                                                                        <div className="linl_filed">
-                                                                            <span><i className="fab fa-instagram"></i></span>
-                                                                            <input type="text" placeholder="Instagram" />
-                                                                        </div>
-                                                                        <div className="linl_filed">
-                                                                            <span><i className="fab fa-youtube"></i></span>
-                                                                            <input type="text" placeholder="Youtube" />
-                                                                        </div>
-                                                                        <div className="linl_filed">
-                                                                            <span><i className="fab fa-twitter"></i></span>
-                                                                            <input type="text" placeholder="Twitter" />
-                                                                        </div>
-                                                                </div>
-                                                                    <div className="ai-create-bottom mt-5 text-center">
-                                                                        <button className="custom-btn-2 continue__btn step_btn_four">Continue</button>
-                                                                    </div>
-                                                                </div>
-                                                        </div>
-
-                                                        <div className="step">
-                                                                <div className="step-ai-wrapper step-wrap-4">
-                                                                    <div className="create-box-title">
-                                                                        <h4>What’s your total followers count?</h4>
-                                                                    </div>
-                                                                    <div className="followers-count">
-                                                                        <div className="count_filed">
-                                                                            <button>50K <span><img src="../assets/img/Tick.svg" alt="" /></span></button>
-                                                                        </div>
-                                                                        <div className="count_filed">
-                                                                            <button>50K - 250K <span><img src="../assets/img/Tick.svg" alt="" /></span></button>
-                                                                        </div>
-                                                                        <div className="count_filed">
-                                                                            <button>250K - 500K <span><img src="../assets/img/Tick.svg" alt="" /></span></button>
-                                                                        </div>
-                                                                </div>
-                                                                    <div className="ai-create-bottom mt-5 text-center">
-                                                                        <button className="custom-btn-2 continue__btn step_btn_five">Continue</button>
-                                                                    </div>
-                                                                </div>
-                                                        </div>
-
-                                                        <div className="step">
-                                                            <img src="../assets/img/shadow-shp.png" className="shadow_shp" alt="" />
-                                                                <div className="step-ai-wrapper step-wrap-4">
-                                                                    <div className="create-box-title">
-                                                                        <h4>Congrats</h4>
-                                                                    </div>
-                                                                    <div className="congrats-box">
-                                                                        <img src="../assets/img/congrats.svg" alt="" />
-                                                                    </div>
-                                                                    <div className="ai-create-bottom mt-5 text-center">
-                                                                        <button className="custom-btn-2">Continue</button>
-                                                                    </div>
-                                                                </div>
                                                         </div>
                                                     </div>
                                             </div>
@@ -549,6 +553,7 @@ const MyProfile = () => {
                                 ActivityFollowingFollowers={ActivityFollowingFollowers}
                                 ActivityFollowingFollowersChange={ActivityFollowingFollowersChange}
                                 FollowingFollowersSearch={FollowingFollowersSearch}
+                                fetchMoreCommunity={fetchMoreCommunity}
                         /> : ''}
                     <Footer />
                 </InfiniteScroll>

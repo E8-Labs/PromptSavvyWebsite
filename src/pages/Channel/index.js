@@ -20,6 +20,9 @@ import CommunityList from '../../components/community/community_list';
 import ErrorSnackbar from '../../components/ErrorSnackbar';
 import SuccessSnackbar from '../../components/SuccessSnackbar';
 
+var prompt_list_page = 1;
+var search_algo_type = 'recent';
+var community_list_page = 1;
 
 
 const Channel = () => {    
@@ -72,7 +75,8 @@ const Channel = () => {
 
     async function fetchMoreUserPrompts(){
         try {
-            const res = await fetching_prompts_of_any_userid(CurrentMongodbUserID,localStorage.getItem('mongodb_userid'),'recent','0');
+            prompt_list_page++;
+            const res = await fetching_prompts_of_any_userid(CurrentMongodbUserID,localStorage.getItem('mongodb_userid'),search_algo_type, prompt_list_page);
             if(res.data){
                 if(res.data.statusCode == 200){
                     var data = JSON.parse(res.data.body);
@@ -122,14 +126,15 @@ const Channel = () => {
         try {
             setFollowingFollowerSearchAlgo('');
             setActivityFollowingFollowers(active);
+            community_list_page = 1;
             if(active == 'followers'){
-                const res = await followers_list(CurrentMongodbUserID,0);
+                const res = await followers_list(CurrentMongodbUserID,community_list_page);
                 if(res.data.statusCode == 200){
                     var data = JSON.parse(res.data.body);
                     setFollowingFollowersUserList(data.subscribers);
                 }
             }else{
-                const res = await following_list(CurrentMongodbUserID,0);
+                const res = await following_list(CurrentMongodbUserID,community_list_page);
                 if(res.data.statusCode == 200){
                     var data = JSON.parse(res.data.body);
                     setFollowingFollowersUserList(data.following);
@@ -143,15 +148,16 @@ const Channel = () => {
 
     async function FollowingFollowersSearch(value){
         try {
-            setFollowingFollowerSearchAlgo(value);        
+            setFollowingFollowerSearchAlgo(value);      
+            community_list_page = 1;  
             if(ActivityFollowingFollowers == 'followers'){
-                const res = await search_followers(CurrentMongodbUserID,value,0);
+                const res = await search_followers(CurrentMongodbUserID,value,community_list_page);
                 if(res.data.statusCode == 200){
                     var data = JSON.parse(res.data.body);
                     setFollowingFollowersUserList(data.followers_search);
                 }
             }else{
-                const res = await search_following(CurrentMongodbUserID,value,0);
+                const res = await search_following(CurrentMongodbUserID,value,community_list_page);
                 if(res.data.statusCode == 200){
                     var data = JSON.parse(res.data.body);
                     setFollowingFollowersUserList(data.following_search);
@@ -163,7 +169,7 @@ const Channel = () => {
         }
     }
 
-    async function get_user_prompts(mongodb_userid,search_algo_type){
+    async function get_user_prompts(mongodb_userid){
         try {
             const res = await fetching_prompts_of_any_userid(mongodb_userid,localStorage.getItem('mongodb_userid'),search_algo_type,'0');
             if(res.data){
@@ -180,14 +186,16 @@ const Channel = () => {
         }
     }
     async function UserRecentPromptActive(event){
-        setsearch_algo('recent');
-        await get_user_prompts(CurrentMongodbUserID,'recent');
+        prompt_list_page = 1;
+        search_algo_type ='recent';
+        await get_user_prompts(CurrentMongodbUserID);
         event.preventDefault();
 
     }
     async function UserPopularPromptActive(event){
-        setsearch_algo('popular');
-        await get_user_prompts(CurrentMongodbUserID,'popular');
+        prompt_list_page = 1;
+        search_algo_type = 'popular';
+        await get_user_prompts(CurrentMongodbUserID);
         event.preventDefault();
     }
 
@@ -244,11 +252,49 @@ const Channel = () => {
                     }else{
                     }
                 }
-                setsearch_algo('recent');
-                await get_user_prompts(mongodb_userid,'recent');
+                search_algo_type = 'recent';
+                await get_user_prompts(mongodb_userid);
                 await GetDefaultFollowStatus(mongodb_userid);
             }
         } catch (error) {
+            handleExceptionError(error);
+            return null;
+        }
+    }
+
+    async function fetchMoreCommunity(){
+        try {
+            community_list_page++;
+            if(FollowingFollowerSearchAlgo != ''){
+                if(ActivityFollowingFollowers == 'followers'){
+                    const res = await search_followers(CurrentMongodbUserID,FollowingFollowerSearchAlgo,community_list_page);
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.followers_search]);
+                    }
+                }else{
+                    const res = await search_following(CurrentMongodbUserID,FollowingFollowerSearchAlgo,community_list_page);
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following_search]);
+                    }
+                }                
+            }else{
+                if(ActivityFollowingFollowers == 'followers'){
+                    const res = await followers_list(CurrentMongodbUserID,community_list_page);
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.subscribers]);
+                    }
+                }else{
+                    const res = await following_list(CurrentMongodbUserID,community_list_page);
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following]);
+                    }
+                }
+            }
+        }catch (error) {
             handleExceptionError(error);
             return null;
         }
@@ -283,8 +329,8 @@ const Channel = () => {
                             <div className="row py-4 align-items-center">
                                 <div className="col-lg-8 col-md-8">
                                     <div className="prompt-filter-left">
-                                        <Link to={`/${CurrentMongodbUserID}`} onClick={UserRecentPromptActive.bind(this)} className={search_algo == 'recent' ? "action_btn active btn_bg_darkblue" : "action_btn btn_bg_darkblue"} ><img src="../assets/img/Activity.svg" alt="" /> Recent</Link>
-                                        <Link to={`/${CurrentMongodbUserID}`} onClick={UserPopularPromptActive.bind(this)} className={search_algo == 'popular' ? "action_btn active btn_bg_pink" : "action_btn btn_bg_pink"} ><img src="../assets/img/badge.svg" alt="" /> Popular</Link>
+                                        <Link to={`/${CurrentMongodbUserID}`} onClick={UserRecentPromptActive.bind(this)} className={search_algo_type == 'recent' ? "action_btn active btn_bg_darkblue" : "action_btn btn_bg_darkblue"} ><img src="../assets/img/Activity.svg" alt="" /> Recent</Link>
+                                        <Link to={`/${CurrentMongodbUserID}`} onClick={UserPopularPromptActive.bind(this)} className={search_algo_type == 'popular' ? "action_btn active btn_bg_pink" : "action_btn btn_bg_pink"} ><img src="../assets/img/badge.svg" alt="" /> Popular</Link>
                                     </div>
                                 </div>
                             </div>
@@ -302,6 +348,7 @@ const Channel = () => {
                             ActivityFollowingFollowers={ActivityFollowingFollowers}
                             ActivityFollowingFollowersChange={ActivityFollowingFollowersChange}
                             FollowingFollowersSearch={FollowingFollowersSearch}
+                            fetchMoreCommunity={fetchMoreCommunity}
                         /> : ''}
                     <Footer />
                 </InfiniteScroll>

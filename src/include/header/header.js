@@ -2,11 +2,15 @@ import React, { useEffect,useState} from 'react';
 import { Link } from 'react-router-dom';
 import InstalledExtension from '../../components/Extension/installed';
 import SideBar from '../sidebar/sidebar';
-import { fetch_user_profile_information } from '../../service/Apis/api';
+import { fetch_user_profile_information, fetch_loggedin_user_notifications } from '../../service/Apis/api';
+import moment from 'moment-timezone';
+moment.tz.setDefault('Etc/UTC');
 
 const Header = () => {
     const [Loginstatus, setLoginstatus] = useState(true);
     const [UserImage, setUserImage] = useState('');
+    const [Notifications, setNotifications] = useState([]);
+    
     useEffect(()  =>  {
         async function fetchData() {
             try {
@@ -18,12 +22,19 @@ const Header = () => {
                         if(res.data.statusCode == 200){
                             var data = JSON.parse(res.data.body);
                             if(data.profile_info.username){
-                                var mongodb_user_image = localStorage.getItem('mongodb_user_image');
                                 setUserImage(data.profile_info.image);
                             }
                         }else{
                         }
                     }
+                    const res1 = await fetch_loggedin_user_notifications(localStorage.getItem('mongodb_userid'),1);
+                    if(res1.data){
+                        if(res1.data.statusCode == 200){
+                            var data1 = JSON.parse(res1.data.body);
+                            setNotifications(data1.notifications);
+                        }
+                    }
+
                 }else{
                     setLoginstatus(false)
                 }
@@ -56,42 +67,14 @@ const Header = () => {
                                                 </div>
                                                 <div className="recent-notification">
                                                     <ul>
-                                                        <li>
-                                                            <Link to="#">
-                                                                You have a new subscriber! 🎉
-                                                                <p>2days ago</p>
-                                                            </Link>
-                                                        </li>
-                                                        <li>
-                                                            <Link to="#">
-                                                                Congrats! You made #$# from #promptname#
-                                                                <p>2days ago</p>
-                                                            </Link>
-                                                        </li>
-                                                        <li>
-                                                            <Link to="#">
-                                                                Check it out! New prompt released by #username#
-                                                                <p>2days ago</p>
-                                                            </Link>
-                                                        </li>
-                                                        <li className="seen_message">
-                                                            <Link to="#">
-                                                                Your prompt is paused by admin
-                                                                <p>2days ago</p>
-                                                            </Link>
-                                                        </li>
-                                                        <li className="seen_message">
-                                                            <Link to="#">
-                                                                New message
-                                                                <p>2days ago</p>
-                                                            </Link>
-                                                        </li>
-                                                        <li className="seen_message">
-                                                            <Link to="#">
-                                                                Your prompt is paused by admin
-                                                                <p>2days ago</p>
-                                                            </Link>
-                                                        </li>
+                                                        {Notifications.map((item, index) => (
+                                                            <li key={index}>
+                                                                <Link to="#" > 
+                                                                    {item.about}
+                                                                    <p>{moment(item.createdAt, "YYYYMMDD, HH:mm:ss").fromNow(true)} ago.</p>
+                                                                </Link>
+                                                            </li>
+                                                        ))}
                                                     </ul>
                                                 </div>
                                             </div>

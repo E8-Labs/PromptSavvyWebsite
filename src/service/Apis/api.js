@@ -37,7 +37,9 @@ export const fetching_prompts_of_any_userid = async (id, loggedIn_uId,search_alg
                 "type": "fetching_prompts_of_any_userid",
                 "id": id, // mongodb_user_id,
                 "loggedIn_uId": loggedIn_uId, // loggedIn_uId
-                "search_algo": search_algo// "popular/recent"
+                "search_algo": search_algo, // "popular/recent"
+                "limit" : process.env.REACT_APP_PER_PAGE_RECORD,
+                "page" : page
             }
         });
         const response = await axios.post(process.env.REACT_APP_API_BASEURL, data);
@@ -82,6 +84,7 @@ export const following_list = async (id, page) => {
             "body": {
                 "type": "following_list",
                 "id": id, // mongodb_user_id
+                "limit" : process.env.REACT_APP_PER_PAGE_RECORD,
                 "page":page
             }
         });
@@ -98,6 +101,7 @@ export const followers_list = async (id, page) => {
             "body": {
                 "type": "followers_list",
                 "id": id, // mongodb_user_id
+                "limit" : process.env.REACT_APP_PER_PAGE_RECORD,
                 "page":page
             }
         });
@@ -115,6 +119,7 @@ export const search_following = async (id, search_by_username ,page) => {
                 "type": "search_following",
                 "id": id, // mongodb_user_id
                 "search_by_username" : search_by_username,
+                "limit" : process.env.REACT_APP_PER_PAGE_RECORD,
                 "page":page
             }
         });
@@ -132,6 +137,7 @@ export const search_followers = async (id, search_by_username ,page) => {
                 "type": "search_followers",
                 "id": id, // mongodb_user_id
                 "search_by_username" : search_by_username,
+                "limit" : process.env.REACT_APP_PER_PAGE_RECORD,
                 "page":page
             }
         });
@@ -212,3 +218,33 @@ export const check_if_subscribed = async (id, loggedIn_uId) => {
     }
 };
 
+export const fetch_loggedin_user_notifications = async (id, page) => {
+    try {
+        let data = JSON.stringify({
+            "body": {
+                "type": "fetch_loggedin_user_notifications",
+                "id":id,
+                "limit" : process.env.REACT_APP_PER_PAGE_RECORD,
+                "page":page
+            }
+        });
+        const response = await axios.post(process.env.REACT_APP_API_BASEURL, data);
+        return response;
+    } catch (error) {
+        return error;
+    }
+};
+export const adding_user_to_wishlist = async (email) => {
+    try {
+        let data = JSON.stringify({
+            "body": {
+                "type": "adding_user_to_wishlist",
+                "email":email
+            }
+        });
+        const response = await axios.post(process.env.REACT_APP_API_BASEURL, data);
+        return response;
+    } catch (error) {
+        return error;
+    }
+};

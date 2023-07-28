@@ -4020,3 +4020,42 @@ select option {
   
     color: #fff !important;
   }
+
+#scrollableDiv2 .infinite-scroll-component__outerdiv {
+	height: 100%;
+}
+#scrollableDiv2 .infinite-scroll-component {
+	min-height: 100%;
+	background: black;
+}
+.join_wait_list {
+	display: block;
+	width: 100%;
+}
+.join_wait_list > div {
+	display: inline-flex;
+}
+.join_wait_list > div > div {
+	width: 270px;
+	text-align: left;
+	margin-right: 15px;
+}
+.join_wait_list label {
+	color: #00c28c;
+	font-weight: 500;
+	font-size: 16px;
+}
+.join_wait_list input {
+	border-radius: 14px;
+	border: 1px solid var(--white, #FFF);
+	background: var(--black, #050A08);
+	padding: 13px 18px;
+	font-size: 13px;
+	color: #fff;
+	width: 100%;
+}
+.join_wait_list button {
+	background: #00c28c;
+	height: 50px;
+	margin-top: 20px;
+}
