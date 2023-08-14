@@ -43,7 +43,7 @@ const PromptGrid = (props) => {
                     <div className="prompt-top">
                         <div className="prompt-user">
                             {props.PublicPrompt.user._id != localStorage.getItem('mongodb_userid')?
-                                <Link to={`/${props.PublicPrompt.user._id}`}>
+                                <Link target="_blank" to={`https://chat.openai.com/c/${props.PublicPrompt._id}`} >
                                     {props.UserImage?
                                         <img src={props.UserImage} alt="" />
                                     :
@@ -56,7 +56,7 @@ const PromptGrid = (props) => {
                                         </div>
                                 </Link>
                                 :
-                                    <Link to="#">
+                                    <Link target="_blank" to={`https://chat.openai.com/c/${props.PublicPrompt._id}`} >
                                         {props.UserImage?
                                             <img src={props.UserImage} alt="" />
                                         :

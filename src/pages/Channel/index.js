@@ -8,7 +8,8 @@ import {
     followers_list,
     check_if_subscribed,
     search_following,
-    search_followers
+    search_followers,
+    fetch_user_banner
 } from '../../service/Apis/api';
 import { useLocation,Link } from 'react-router-dom';
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -29,6 +30,7 @@ const Channel = () => {
     const location = useLocation();
     const [UserName, setUserName] = useState('');
     const [UserImage, setUserImage] = useState('');
+    const [BannerImage, setBannerImage] = useState('/assets/img/banner-bg.png');
     const [FollowersLength, setFollowersLength] = useState(0);
     const [SocialLinks, setSocialLinks] = useState([]);
     const [UserPrompts, setUserPrompts] = useState([]);
@@ -219,6 +221,8 @@ const Channel = () => {
         }
     }
 
+    async function ChangeBannerImage(file){}
+
     async function fetchData() {
         try {
             if(localStorage.getItem('mongodb_userid') != undefined && localStorage.getItem('mongodb_userid') != null ){
@@ -255,6 +259,15 @@ const Channel = () => {
                 search_algo_type = 'recent';
                 await get_user_prompts(mongodb_userid);
                 await GetDefaultFollowStatus(mongodb_userid);
+                const res2 = await fetch_user_banner(localStorage.getItem('mongodb_userid'));
+                if(res2.data.statusCode){
+                    var data2 = JSON.parse(res2.data.body);
+                    if(data2.banner){
+                        setBannerImage(data2.banner);
+                    }else{
+                        setBannerImage('/assets/img/banner-bg.png');
+                    }
+                }
             }
         } catch (error) {
             handleExceptionError(error);
@@ -323,6 +336,8 @@ const Channel = () => {
                         followers_request={followers_request}
                         ShowCommunity={ShowCommunity}
                         UserImage={UserImage}
+                        BannerImage={BannerImage}
+                        ChangeBannerImage={ChangeBannerImage}
                     />
                     <section className="prompt-area">
                         <div className="container-fluid">

@@ -19,8 +19,18 @@ const UserProfileArea = (props) => {
     function handleFileChangeOpen(event){
         fileInputRef.current.click();
     }
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const base64String = event.target.result;
+                props.ChangeBannerImage(base64String);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            console.log('Please select an image file.');
+        }
     };
     
     return (
@@ -29,7 +39,7 @@ const UserProfileArea = (props) => {
                 <div className="container-fluid">
                     <div className="row">
                         <div className="col-lg-12">
-                            <div className="user-profile-banner">
+                            <div className="user-profile-banner"  style={{ backgroundImage: `url(${props.BannerImage})` }}>
                                 {props.UserID == localStorage.getItem('mongodb_userid')?
                                     <>
                                         <button onClick={handleFileChangeOpen} className="edit_banner" htmlFor="edit_banner">

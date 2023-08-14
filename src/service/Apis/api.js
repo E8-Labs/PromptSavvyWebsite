@@ -248,3 +248,49 @@ export const adding_user_to_wishlist = async (email) => {
         return error;
     }
 };
+
+export const fetch_user_banner = async (uId) => {
+    try {
+        let data = JSON.stringify({
+            "body": {
+                "type": "fetch_user_banner",
+                "uId":uId
+            }
+        });
+        const response = await axios.post(process.env.REACT_APP_API_BASEURL, data);
+        return response;
+    } catch (error) {
+        return error;
+    }
+};
+
+export const upload_user_banner = async (uId,banner_img) => {
+    try {
+        let data = JSON.stringify({
+            "body": {
+                "type": "upload_user_banner",
+                "uId" : uId,
+                "banner_img":banner_img
+            }
+        });
+        const response = await axios.post(process.env.REACT_APP_API_BASEURL, data);
+        return response;
+    } catch (error) {
+        return error;
+    }
+};
+
+export const logging_out = async (id) => {
+    try {
+        let data = JSON.stringify({
+            "body": {
+                "type": "logging_out",
+                "id" : id
+            }
+        });
+        const response = await axios.post(process.env.REACT_APP_API_BASEURL, data);
+        return response;
+    } catch (error) {
+        return error;
+    }
+};

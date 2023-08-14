@@ -8,7 +8,9 @@ import {
     followers_list,following_list,
     search_followers,
     search_following,
-    adding_user_to_wishlist
+    fetch_user_banner,
+    upload_user_banner,
+    logging_out
 } from '../../service/Apis/api';
 import Header from '../../include/header/header';
 import UserProfileArea from '../../components/userprofile/userprofilearea';
@@ -29,6 +31,7 @@ const MyProfile = () => {
     const [FollowersLength, setFollowersLength] = useState(0);
     const [SocialLinks, setSocialLinks] = useState([]);
     const [UserPrompts, setUserPrompts] = useState([]);
+    const [BannerImage, setBannerImage] = useState('/assets/img/banner-bg.png');
     const [FollowStatus, setFollowStatus] = useState(false);
     const [ShowCommunityListStatus, setShowCommunityListStatus] = useState(false);
     const [FollowingFollowerSearchAlgo, setFollowingFollowerSearchAlgo] = useState('');
@@ -236,8 +239,19 @@ const MyProfile = () => {
         }
     }
 
-    function logout(){
-        localStorage.removeItem('mongodb_userid');
+    async function logout(){
+        const res = await logging_out(localStorage.getItem('mongodb_userid'));
+        if(res.data.statusCode == 200){
+            localStorage.removeItem('mongodb_userid');
+            window.location.reload();
+        }
+    }
+
+    async function ChangeBannerImage(file){
+        const res = await upload_user_banner(localStorage.getItem('mongodb_userid'),file);
+        if(res.data.statusCode == 200){
+            setBannerImage(file);
+        }
     }
     
 
@@ -284,6 +298,16 @@ const MyProfile = () => {
                     if(res1.data.statusCode){
                         var data1 = JSON.parse(res1.data.body);
                         setUserPrompts(data1.user_prompts)
+                    }
+
+                    const res2 = await fetch_user_banner(localStorage.getItem('mongodb_userid'));
+                    if(res2.data.statusCode){
+                        var data2 = JSON.parse(res2.data.body);
+                        if(data2.banner){
+                            setBannerImage(data2.banner);
+                        }else{
+                            setBannerImage('/assets/img/banner-bg.png');
+                        }
                     }
                 }
             } catch (error) {
@@ -360,6 +384,8 @@ const MyProfile = () => {
                         followers_request={followers_request}
                         ShowCommunity={ShowCommunity}
                         UserImage={UserImage}
+                        BannerImage={BannerImage}
+                        ChangeBannerImage={ChangeBannerImage}
                     />
                         <section className="prompt-area">
                             <div className="container-fluid">
