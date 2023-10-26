@@ -6,9 +6,9 @@ const InstalledExtension = () => {
     // const [Loginstatus, setLoginstatus] = useState(false);
     async function InstalledExtensionRequest(event){ 
         // setLoginstatus(true);
-        localStorage.setItem('mongodb_userid','64931fc8905027b4b0d4fa2e');
-        window.location.reload();
-        event.preventDefault();
+        // localStorage.setItem('mongodb_userid','64931fc8905027b4b0d4fa2e');
+        // window.location.reload();
+        // event.preventDefault();
     }
     return (
         <>

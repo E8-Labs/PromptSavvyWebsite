@@ -10,7 +10,8 @@ import {
     search_following,
     fetch_user_banner,
     upload_user_banner,
-    logging_out
+    logging_out,
+    adding_user_to_wishlist
 } from '../../service/Apis/api';
 import Header from '../../include/header/header';
 import UserProfileArea from '../../components/userprofile/userprofilearea';
@@ -22,12 +23,14 @@ import SuccessSnackbar from '../../components/SuccessSnackbar';
 
 var prompt_list_page = 1;
 var community_list_page = 1;
+// var IntervalCount = 0;
  
 const MyProfile = () => {
     const fileInputRef = useRef(null);
 
     const [UserName, setUserName] = useState('');
     const [UserImage, setUserImage] = useState('');
+    const [UserImageError, setUserImageError] = useState('');
     const [FollowersLength, setFollowersLength] = useState(0);
     const [SocialLinks, setSocialLinks] = useState([]);
     const [UserPrompts, setUserPrompts] = useState([]);
@@ -99,6 +102,12 @@ const MyProfile = () => {
                 handleExceptionError({message:'Please enter valid email address'});
                 return false;
             }
+            setEditFormName(false);
+            setEditFormEmail(false);
+            setEditFormYoutubeLink(false);
+            setEditFormInstagramLink(false);
+            setEditFormWebsiteLink(false);
+            setShowSaveButton(false);
             const res = await editing_user_profile_information(
                 localStorage.getItem('mongodb_userid'),
                 FormEmail,
@@ -109,15 +118,10 @@ const MyProfile = () => {
                 FormWebsiteLink
             );
             if(res.data.statusCode == 200){
-                setEditFormName(false);
-                setEditFormEmail(false);
-                setEditFormYoutubeLink(false);
-                setEditFormInstagramLink(false);
-                setEditFormWebsiteLink(false);
-                setShowSaveButton(false);
                 handleExceptionSuccessMessages('Profile upaded successfully!')
             }
         } catch (error) {
+            setShowSaveButton(true);
             handleExceptionError(error);
             return null;
         }
@@ -133,7 +137,7 @@ const MyProfile = () => {
                 handleExceptionError({message:'Please enter valid email address'});
                 return false;
             }
-            /*
+            
             const res = await adding_user_to_wishlist(
                 WaitListEmail
             );
@@ -141,7 +145,7 @@ const MyProfile = () => {
                 var data = JSON.parse(res.data.body);
                 handleExceptionSuccessMessages(data.message)
                 setWaitListEmail('');
-            }*/
+            }
         } catch (error) {
             handleExceptionError(error);
             return null;
@@ -155,17 +159,22 @@ const MyProfile = () => {
     }
 
     async function handleFileChange(event){
+        setUserImageError('');
         const file = event.target.files[0];
         if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const base64String = event.target.result;
-                setUserImage(base64String);
-            };
-            reader.readAsDataURL(file);
-            setShowSaveButton(true);
+            if (file && file.size <= 2 * 1024 * 1024) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const base64String = event.target.result;
+                    setUserImage(base64String);
+                };
+                reader.readAsDataURL(file);
+                setShowSaveButton(true);
+            }else{
+                setUserImageError('Please select a file smaller than 2MB.');    
+            }
         } else {
-            console.log('Please select an image file.');
+            setUserImageError('Please select an image file.');
         }
     }
 
@@ -248,22 +257,44 @@ const MyProfile = () => {
     }
 
     async function ChangeBannerImage(file){
+        setBannerImage(file);
         const res = await upload_user_banner(localStorage.getItem('mongodb_userid'),file);
         if(res.data.statusCode == 200){
-            setBannerImage(file);
         }
     }
     
 
     useEffect(() => {
+        var IntervalCount = 0;
+        const interval = setInterval(() => {
+            const userObjElement = document.getElementById('user-obj');
+            if (userObjElement) {
+                if(IntervalCount == 0){
+                    const userObjString = userObjElement.textContent;
+                    const userObj = JSON.parse(userObjString);
+                    const userId = userObj.user.id;
+                    IntervalCount = 1;
+                    localStorage.setItem('mongodb_userid',userId);
+                    fetchData();
+                }
+            }else{
+                localStorage.removeItem('mongodb_userid');
+                IntervalCount = 0;
+            }
+        }, 500);        
+
         async function fetchData() {
             try {
-                if(localStorage.getItem('mongodb_userid') != undefined && localStorage.getItem('mongodb_userid') != null ){
+                if(localStorage.getItem('mongodb_userid')){
 
                     const res = await fetch_user_profile_information(localStorage.getItem('mongodb_userid'));
+                    
                     if(res.data){
                         if(res.data.statusCode == 200){
                             var data = JSON.parse(res.data.body);
+
+                            console.log('res.data',data)
+
                             if(data.profile_info.username){
                                 setUserName(data.profile_info.username);
                                 setFormName(data.profile_info.username);
@@ -271,7 +302,7 @@ const MyProfile = () => {
                             if(data.profile_info.email){
                                 setFormEmail(data.profile_info.email);
                             }   
-                            if(data.subscribers){
+                            if(data.profile_info.subscribers){
                                 setFollowersLength(data.profile_info.subscribers.length);
                             }
                             if(data.profile_info.social_links){
@@ -315,12 +346,13 @@ const MyProfile = () => {
                 return null;
             }
         }
-        fetchData();
-
         document.body.classList.add('body_class');
         return () => {
-          document.body.classList.remove('gtp_page');
+            clearInterval(interval);
+            // window.removeEventListener('message', handleEvent);
+            document.body.classList.remove('gtp_page');
         };
+        
     }, []);
 
     async function fetchMoreCommunity(){
@@ -366,7 +398,7 @@ const MyProfile = () => {
         <>
             <ErrorSnackbar errorMessages={ExceptionError} onClearErrors={clearErrors} />
             <SuccessSnackbar successMessages={successMessages} onclearSuccess={clearSuccess} />
-            <Header />
+            <Header userprofileimage={UserImage} />
                 <main className="main_content-start" id="scrollableDiv" style={{ height: '100vh', overflow: "auto" }}>
                 <InfiniteScroll
                     dataLength={UserPrompts.length}
@@ -451,12 +483,18 @@ const MyProfile = () => {
                                                                                         </div>
                                                                                         <div className="p-image">
                                                                                             <img onClick={handleFileChangeOpen} className="upload-button" src="../assets/img/camara.svg" alt="" />
-                                                                                            <input ref={fileInputRef} onChange={handleFileChange} className="file-upload" type="file" accept="image/*" />
+                                                                                            <input ref={fileInputRef} onChange={handleFileChange} className="file-upload" type="file" accept="image/*" data-max-size="2048" />
+                                                                                            
                                                                                         </div>
                                                                                     </div>
                                                                                     <div className="dp-text">
                                                                                         <h4>{FormName}</h4>
                                                                                         <p>{FormEmail}</p>
+                                                                                        {UserImageError?
+                                                                                            <p style={{color:'red',marginTop:'10px',fontSize:'11px',fontWeight:'400'}}>{UserImageError}</p>
+                                                                                            :
+                                                                                            <></>
+                                                                                        }
                                                                                     </div>
                                                                                 </div>
                                                                                 <div className="myrofile-info-list">
@@ -558,7 +596,7 @@ const MyProfile = () => {
                                                                 <div>
                                                                     <div>
                                                                         <label>Join the waitlist</label>
-                                                                        <input type="email" onChange={e => setWaitListEmail(e.target.value)} name="" value={WaitListEmail} placeholder="Email Address" />
+                                                                        <input type="email" onChange={e => setWaitListEmail(e.target.value.replaceAll(' ',''))} name="" value={WaitListEmail} placeholder="Email Address" />
                                                                     </div>
                                                                     <button onClick={SendRequestWaitList.bind(this)} className="custom-btn-2">Join the waitlist</button>
                                                                 </div>

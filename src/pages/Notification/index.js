@@ -1,6 +1,6 @@
 import React, { useEffect,useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetch_user_profile_information,fetch_loggedin_user_notifications } from '../../service/Apis/api';
+import { fetch_user_profile_information,fetch_loggedin_user_notifications, fetch_user_banner, upload_user_banner } from '../../service/Apis/api';
 import Header from '../../include/header/header';
 import UserProfileArea from '../../components/userprofile/userprofilearea';
 import Footer from '../../include/footer';
@@ -13,6 +13,7 @@ import moment from 'moment-timezone';
 moment.tz.setDefault('Etc/UTC');
 
 var notification_list_page = 1;
+// var IntervalCount = 0;
 const Notification = () => {
     // const location = useLocation();
     const [UserName, setUserName] = useState('');
@@ -27,12 +28,19 @@ const Notification = () => {
 
     const [ExceptionError, setExceptionError] = useState([]);
     const [successMessages, setSuccessMessages] = useState([]);
+    const [BannerImage, setBannerImage] = useState('/assets/img/banner-bg.png');
 
     function handleExceptionError(error) {
         setExceptionError(ExceptionError => [
             ...ExceptionError,
             { id: Date.now(), message: error.message },
         ]);
+    }
+    async function ChangeBannerImage(file){
+        setBannerImage(file);
+        const res = await upload_user_banner(localStorage.getItem('mongodb_userid'),file);
+        if(res.data.statusCode == 200){
+        }
     }
 
     function handleExceptionSuccessMessages(msg) {
@@ -76,6 +84,23 @@ const Notification = () => {
     }
 
     useEffect(() => {
+        var IntervalCount = 0;
+        const interval = setInterval(() => {
+            const userObjElement = document.getElementById('user-obj');
+            if (userObjElement) {
+                if(IntervalCount == 0){
+                    const userObjString = userObjElement.textContent;
+                    const userObj = JSON.parse(userObjString);
+                    const userId = userObj.user.id;
+                    IntervalCount = 1;
+                    localStorage.setItem('mongodb_userid',userId);
+                    fetchData();
+                }
+            }else{
+                localStorage.removeItem('mongodb_userid');
+                IntervalCount = 0;
+            }
+        }, 500);
         async function fetchData() {
             try {
                 if(localStorage.getItem('mongodb_userid') != undefined && localStorage.getItem('mongodb_userid') != null ){
@@ -107,16 +132,25 @@ const Notification = () => {
                             setNotifications([...Notifications, ...data1.notifications]);
                         }
                     }
+
+                    const res2 = await fetch_user_banner(localStorage.getItem('mongodb_userid'));
+                    if(res2.data.statusCode){
+                        var data2 = JSON.parse(res2.data.body);
+                        if(data2.banner){
+                            setBannerImage(data2.banner);
+                        }else{
+                            setBannerImage('/assets/img/banner-bg.png');
+                        }
+                    }
                 }
             } catch (error) {
                 handleExceptionError(error);
             }
-        }
-        fetchData();        
-
+        }       
         document.body.classList.add('body_class');
         return () => {
-          document.body.classList.remove('gtp_page');
+            clearInterval(interval);
+            document.body.classList.remove('gtp_page');
         };
     }, []);
 
@@ -124,7 +158,7 @@ const Notification = () => {
         <>
             <ErrorSnackbar errorMessages={ExceptionError} onClearErrors={clearErrors} />
             <SuccessSnackbar successMessages={successMessages} onclearSuccess={clearSuccess} />
-            <Header />
+            <Header userprofileimage="" />
                 <main className="main_content-start" id="scrollableDiv" style={{ height: '100vh', overflow: "auto" }}>
                     <InfiniteScroll
                         dataLength={Notifications.length}
@@ -142,6 +176,8 @@ const Notification = () => {
                             followers_request={followers_request}
                             ShowCommunity={ShowCommunity}
                             UserImage={UserImage}
+                            BannerImage={BannerImage}
+                            ChangeBannerImage={ChangeBannerImage}
                         />
 
                         <section className="prompt-area">

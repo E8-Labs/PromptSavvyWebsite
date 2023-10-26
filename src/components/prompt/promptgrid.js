@@ -43,7 +43,7 @@ const PromptGrid = (props) => {
                     <div className="prompt-top">
                         <div className="prompt-user">
                             {props.PublicPrompt.user._id != localStorage.getItem('mongodb_userid')?
-                                <Link target="_blank" to={`https://chat.openai.com/c/${props.PublicPrompt._id}`} >
+                                <Link target="_blank" to={`https://chat.openai.com/?id=${props.PublicPrompt._id}`} >
                                     {props.UserImage?
                                         <img src={props.UserImage} alt="" />
                                     :
@@ -56,7 +56,7 @@ const PromptGrid = (props) => {
                                         </div>
                                 </Link>
                                 :
-                                    <Link target="_blank" to={`https://chat.openai.com/c/${props.PublicPrompt._id}`} >
+                                    <Link target="_blank" to={`https://chat.openai.com/?id=${props.PublicPrompt._id}`} >
                                         {props.UserImage?
                                             <img src={props.UserImage} alt="" />
                                         :
@@ -88,16 +88,22 @@ const PromptGrid = (props) => {
                             </div>
                         </div>
                     </div>
-                    <div className="prompt-content">
-                        <h3>{props.PublicPrompt.title}</h3>
-                        <div className="prompt--description">
-                            <p>{props.PublicPrompt.template.substr(0, 220)}</p>
+                    <Link target="_blank" to={`https://chat.openai.com/?id=${props.PublicPrompt._id}`} >
+                        <div className="prompt-content">
+                            <h3>{props.PublicPrompt.title}</h3>
+                            <div className="prompt--description">
+                                {props.PublicPrompt.template?
+                                    <p>{props.PublicPrompt.template.substr(0, 220)}</p>
+                                :
+                                    <></>
+                                }
+                            </div>
                         </div>
-                    </div>
+                    </Link>         
                     <div className="prompt-card-bottom">
-                        <Link to="#"><img src="../assets/img/up-arrow.svg" alt="" />{convertToShortForm(props.PublicPrompt.likes)}</Link>
-                        <Link to="#"><img src="../assets/img/eye.svg" alt="" />{convertToShortForm(props.PublicPrompt.views)}</Link>
-                        <Link to="#"><img src="../assets/img/Message-green.svg" alt="" />{convertToShortForm(props.PublicPrompt.comments)}</Link>
+                        <Link to={`https://chat.openai.com/?id=${props.PublicPrompt._id}`}><img src="../assets/img/up-arrow.svg" alt="" />{convertToShortForm(props.PublicPrompt.likes)}</Link>
+                        <Link to={`https://chat.openai.com/?id=${props.PublicPrompt._id}`}><img src="../assets/img/eye.svg" alt="" />{convertToShortForm(props.PublicPrompt.views)}</Link>
+                        <Link to={`https://chat.openai.com/?id=${props.PublicPrompt._id}`}><img src="../assets/img/Message-green.svg" alt="" />{convertToShortForm(props.PublicPrompt.comments)}</Link>
                     </div>
                 </div>
             </div>

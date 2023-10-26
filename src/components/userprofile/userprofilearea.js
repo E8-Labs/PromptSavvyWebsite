@@ -1,15 +1,17 @@
-import React, {useRef } from 'react';
+import React, {useRef,useState } from 'react';
 import { Link } from 'react-router-dom';
 const UserProfileArea = (props) => {
     const fileInputRef = useRef(null);
+    const [UserImageError, setUserImageError] = useState('');
 
     function followers_request(event){
         props.followers_request();
         event.preventDefault();
     }
     function unfollowers_request(event){
+
         props.unfollowers_request();
-        props.FollowStatus(false)
+        // props.FollowStatus(false)
         event.preventDefault();
     }
     function ShowCommunity(event){
@@ -20,16 +22,21 @@ const UserProfileArea = (props) => {
         fileInputRef.current.click();
     }
     const handleFileChange = (event) => {
+        setUserImageError('');
         const file = event.target.files[0];
         if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const base64String = event.target.result;
-                props.ChangeBannerImage(base64String);
-            };
-            reader.readAsDataURL(file);
+            if (file && file.size <= 2 * 1024 * 1024) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const base64String = event.target.result;
+                    props.ChangeBannerImage(base64String);
+                };
+                reader.readAsDataURL(file);
+            }else{
+                setUserImageError('Please select a file smaller than 2MB.');  
+            }
         } else {
-            console.log('Please select an image file.');
+            setUserImageError('Please select an image file.');
         }
     };
     
@@ -39,7 +46,8 @@ const UserProfileArea = (props) => {
                 <div className="container-fluid">
                     <div className="row">
                         <div className="col-lg-12">
-                            <div className="user-profile-banner"  style={{ backgroundImage: `url(${props.BannerImage})` }}>
+                            {/* <div className="user-profile-banner"  style={{ backgroundImage: `url(${props.BannerImage})` }}> */}
+                            <div className="user-profile-banner"  style={{ background: `linear-gradient(180deg,rgba(0,0,0,0) 10.73%,rgba(0,0,0,.575644) 100%,rgba(0,0,0,.78) 78.78%) center/cover,url(${props.BannerImage}) center/cover` }}>
                                 {props.UserID == localStorage.getItem('mongodb_userid')?
                                     <>
                                         <button onClick={handleFileChangeOpen} className="edit_banner" htmlFor="edit_banner">
@@ -72,6 +80,11 @@ const UserProfileArea = (props) => {
                                                 </div>
                                             </div>
                                         </div>
+                                        {UserImageError?
+                                            <p style={{color:'red',marginTop:'10px',fontSize:'11px',fontWeight:'400'}}>{UserImageError}</p>
+                                            :
+                                            <></>
+                                        }
                                     </div>
                                     <div className="col-lg-6 col-md-6">
                                         <div className="user_info_wrap">

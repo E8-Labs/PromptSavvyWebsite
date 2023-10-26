@@ -3,6 +3,8 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { Link } from 'react-router-dom';
 
 const CommunityList = (props) => {
+
+    console.log('props.FollowingFollowersUserList',props.FollowingFollowersUserList);
     
     const [SearchValue, setSearchValue] = useState('');
     function CloseCommunity(event) {
@@ -81,20 +83,33 @@ const CommunityList = (props) => {
                                         <div className="tab-content" id="myTabContent">
                                             <div className="tab-pane fade show active pt-3 pb-2" id="menu" role="tabpanel" aria-labelledby="menu-tab" >
                                                 <ul>
-                                                    {props.FollowingFollowersUserList.map((item, index) => (
-                                                        <li key={index}>
-                                                            <Link target="_blank" to={`/${item._id}`} className="d-flex align-items-center">
-                                                                <img src="../assets/img/austin.png" alt="" />
-                                                                <div className="menu-text flex-fill">
+                                                    {props.FollowingFollowersUserList.length > 0 ? (
+                                                        props.FollowingFollowersUserList.map((item, index) => (
+                                                            <li key={index}>
+                                                                <Link target="_blank" to={`/${item._id}`} className="d-flex align-items-center">
+                                                                    {item.image?
+                                                                        <img src={item.image} alt="" style={{borderRadius:'50%'}}/>
+                                                                    :
+                                                                        <img src="../assets/img/profile-pic.png" alt="" style={{borderRadius:'50%'}} />
+                                                                    }
+                                                                    
+                                                                    
+                                                                    <div className="menu-text flex-fill">
                                                                     {/* <div>{item.email.substr(0, 15)}</div>
                                                                     <div>@{item.username.substr(0, 15)}</div> */}
                                                                     {/* <div>{item.email}</div> */}
                                                                     <div>@{item.username}</div>
-                                                                </div>
-                                                                <button className="visit_profile" data-bs-toggle="modal" data-bs-target="#SelectPlanModal" data-bs-dismiss="modal" >Visit Profile</button>
-                                                            </Link>
-                                                        </li>
-                                                    ))}
+                                                                    </div>
+                                                                    <button className="visit_profile" data-bs-toggle="modal" data-bs-target="#SelectPlanModal" data-bs-dismiss="modal">
+                                                                    Visit Profile
+                                                                    </button>
+                                                                </Link>
+                                                            </li>
+                                                        ))
+                                                    ) : (
+                                                        <li>Search result not found</li>
+                                                    )}
+
                                                 </ul>
                                             </div>
                                         </div>

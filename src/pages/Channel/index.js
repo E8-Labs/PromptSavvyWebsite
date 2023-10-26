@@ -24,6 +24,7 @@ import SuccessSnackbar from '../../components/SuccessSnackbar';
 var prompt_list_page = 1;
 var search_algo_type = 'recent';
 var community_list_page = 1;
+// var IntervalCount = 0;
 
 
 const Channel = () => {    
@@ -71,8 +72,28 @@ const Channel = () => {
     }
     
     
-    useEffect(() => {        
-        fetchData();
+    useEffect(() => {      
+        var IntervalCount = 0;  
+        const interval = setInterval(() => {
+            const userObjElement = document.getElementById('user-obj');
+            if (userObjElement) {
+                if(IntervalCount == 0){
+                    const userObjString = userObjElement.textContent;
+                    const userObj = JSON.parse(userObjString);
+                    const userId = userObj.user.id;
+                    IntervalCount = 1;
+                    localStorage.setItem('mongodb_userid',userId);
+                    fetchData();
+                }
+            }else{
+                localStorage.removeItem('mongodb_userid');
+                IntervalCount = 0;
+            }
+        }, 500);   
+
+        return () => {
+            clearInterval(interval);
+        };
     }, []);
 
     async function fetchMoreUserPrompts(){
@@ -259,7 +280,7 @@ const Channel = () => {
                 search_algo_type = 'recent';
                 await get_user_prompts(mongodb_userid);
                 await GetDefaultFollowStatus(mongodb_userid);
-                const res2 = await fetch_user_banner(localStorage.getItem('mongodb_userid'));
+                const res2 = await fetch_user_banner(mongodb_userid);
                 if(res2.data.statusCode){
                     var data2 = JSON.parse(res2.data.body);
                     if(data2.banner){
@@ -318,7 +339,7 @@ const Channel = () => {
         <>
             <ErrorSnackbar errorMessages={ExceptionError} onClearErrors={clearErrors} />
             <SuccessSnackbar successMessages={successMessages} onclearSuccess={clearSuccess} />
-            <Header />
+            <Header userprofileimage="" />
             <main className="main_content-start" id="scrollableDiv" style={{ height: '100vh', overflow: "auto" }}>
                 <InfiniteScroll
                     dataLength={UserPrompts.length}
