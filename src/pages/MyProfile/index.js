@@ -273,9 +273,13 @@ const MyProfile = () => {
                     const userObjString = userObjElement.textContent;
                     const userObj = JSON.parse(userObjString);
                     const userId = userObj.user.id;
-                    IntervalCount = 1;
-                    localStorage.setItem('mongodb_userid',userId);
-                    fetchData();
+                    if(userId != ''){
+                        IntervalCount = 1;
+                        localStorage.setItem('mongodb_userid',userId);
+                        fetchData();
+                    }else{
+                        localStorage.removeItem('mongodb_userid');
+                    }
                 }
             }else{
                 localStorage.removeItem('mongodb_userid');

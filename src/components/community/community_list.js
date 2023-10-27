@@ -1,11 +1,11 @@
-import React,{useState} from 'react';
+import React, { useState } from 'react';
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Link } from 'react-router-dom';
 
 const CommunityList = (props) => {
 
-    console.log('props.FollowingFollowersUserList',props.FollowingFollowersUserList);
-    
+    console.log('props.FollowingFollowersUserList', props.FollowingFollowersUserList);
+
     const [SearchValue, setSearchValue] = useState('');
     function CloseCommunity(event) {
         props.CloseCommunity();
@@ -25,13 +25,13 @@ const CommunityList = (props) => {
         props.FollowingFollowersSearch(SearchValue);
         event.preventDefault();
     }
-    function fetchMoreCommunity(){
-        props.fetchMoreCommunity();        
+    function fetchMoreCommunity() {
+        props.fetchMoreCommunity();
     }
 
     return (
         <>
-            <div style={{ minHeight:'100vh',height: '100vh', overflow: "auto" }} >
+            <div style={{ minHeight: '100vh', height: '100vh', overflow: "auto" }} >
                 <div style={{ transform: 'none', visibility: 'visible' }} className="offcanvas offcanvas-end" tabIndex={-1} id="offcanvasRight" aria-labelledby="offcanvasRightLabel" >
                     <div className="offcanvas-header">
                         <div className="offcanvas-label">
@@ -41,7 +41,7 @@ const CommunityList = (props) => {
                             <button type="button" className="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close" />
                         </div>
                     </div>
-                    
+
                     <div className="offcanvas-body p-0" id="scrollableDiv2">
                         <InfiniteScroll
                             dataLength={props.FollowingFollowersUserList.length}
@@ -51,7 +51,7 @@ const CommunityList = (props) => {
                             scrollableTarget="scrollableDiv2"
                         >
                             <div className="wrapper d-flex h-100" >
-                                <aside className="sidebar h-100"> 
+                                <aside className="sidebar h-100">
                                     <div className="sidebar-section sidebar-profile pt-0 pb-4">
                                         <div className="profile-picture">
                                             <span className="profile-alert" />
@@ -86,24 +86,35 @@ const CommunityList = (props) => {
                                                     {props.FollowingFollowersUserList.length > 0 ? (
                                                         props.FollowingFollowersUserList.map((item, index) => (
                                                             <li key={index}>
-                                                                <Link target="_blank" to={`/${item._id}`} className="d-flex align-items-center">
-                                                                    {item.image?
-                                                                        <img src={item.image} alt="" style={{borderRadius:'50%'}}/>
+                                                                {localStorage.getItem('mongodb_userid') == item._id ?
+                                                                    <Link to={`/`} className="d-flex align-items-center">
+                                                                        {item.image ?
+                                                                            <img src={item.image} alt="" style={{ borderRadius: '50%' }} />
+                                                                            :
+                                                                            <img src="../assets/img/profile-pic.png" alt="" style={{ borderRadius: '50%' }} />
+                                                                        }
+                                                                        <div className="menu-text flex-fill">
+                                                                            <div>@{item.username}</div>
+                                                                        </div>
+                                                                        <button className="visit_profile" data-bs-toggle="modal" data-bs-target="#SelectPlanModal" data-bs-dismiss="modal">
+                                                                            Visit Profile
+                                                                        </button>
+                                                                    </Link>
                                                                     :
-                                                                        <img src="../assets/img/profile-pic.png" alt="" style={{borderRadius:'50%'}} />
-                                                                    }
-                                                                    
-                                                                    
-                                                                    <div className="menu-text flex-fill">
-                                                                    {/* <div>{item.email.substr(0, 15)}</div>
-                                                                    <div>@{item.username.substr(0, 15)}</div> */}
-                                                                    {/* <div>{item.email}</div> */}
-                                                                    <div>@{item.username}</div>
-                                                                    </div>
-                                                                    <button className="visit_profile" data-bs-toggle="modal" data-bs-target="#SelectPlanModal" data-bs-dismiss="modal">
-                                                                    Visit Profile
-                                                                    </button>
-                                                                </Link>
+                                                                    <Link target="_blank" to={`/${item._id}`} className="d-flex align-items-center">
+                                                                        {item.image ?
+                                                                            <img src={item.image} alt="" style={{ borderRadius: '50%' }} />
+                                                                            :
+                                                                            <img src="../assets/img/profile-pic.png" alt="" style={{ borderRadius: '50%' }} />
+                                                                        }
+                                                                        <div className="menu-text flex-fill">
+                                                                            <div>@{item.username}</div>
+                                                                        </div>
+                                                                        <button className="visit_profile" data-bs-toggle="modal" data-bs-target="#SelectPlanModal" data-bs-dismiss="modal">
+                                                                            Visit Profile
+                                                                        </button>
+                                                                    </Link>
+                                                                }
                                                             </li>
                                                         ))
                                                     ) : (
@@ -117,8 +128,8 @@ const CommunityList = (props) => {
                                 </aside>
                             </div>
                         </InfiniteScroll>
-                    </div>                    
-                </div>                
+                    </div>
+                </div>
             </div>
         </>
     );

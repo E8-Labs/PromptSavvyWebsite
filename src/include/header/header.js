@@ -21,10 +21,14 @@ const Header = (props) => {
                     const userObjString = userObjElement.textContent;
                     const userObj = JSON.parse(userObjString);
                     const userId = userObj.user.id;
-                    IntervalCount = 1;
-                    localStorage.setItem('mongodb_userid',userId);
-                    setLoginstatus(true)
-                    fetchData();
+                    if(userId != ''){
+                        IntervalCount = 1;
+                        localStorage.setItem('mongodb_userid',userId);
+                        setLoginstatus(true)
+                        fetchData();
+                    }else{
+                        setLoginstatus(false)
+                    }
                 }
             }else{
                 setLoginstatus(false)
