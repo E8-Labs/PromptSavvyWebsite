@@ -163,18 +163,7 @@
             if  ( $(this).val() === '') {
                $(this).closest('.single_filed, .content-gose, .filed_bx, .ai_textarea').removeClass('focused');
             }
-        });
-
-        // new MultiSelectTag('countries', {
-        //     rounded: true,    // default true
-        //     shadow: true,      // default false
-        //     placeholder: 'Search',  // default Search...
-        //     onChange: function(values) {
-        //         console.log(values)
-        //     }
-        // })
-
-        
+        });       
           
 	});
 }(jQuery));	

@@ -5,12 +5,13 @@ import { Link } from 'react-router-dom';
 
 moment.tz.setDefault('Etc/UTC');
 const PromptGrid = (props) => {
-    const [SavePrompts, setSavePrompts] = useState(props.PublicPrompt.isFavourite);
-    
+    // const [SavePrompts, setSavePrompts] = useState(props.PublicPrompt.isFavourite);
     async function SavePromptsRequest(event) {
         try {
-            setSavePrompts(true);
+            // setSavePrompts(true);
+            // props.PublicPrompt.isFavourite = true;
             const res = await adding_favourite_prompt(localStorage.getItem('mongodb_userid'),props.PublicPrompt._id);
+            props.adding_favourite_prompt2(props.PublicPrompt._id,true);
             event.preventDefault();
         } catch (error) {
             props.handleExceptionError(error);
@@ -19,8 +20,10 @@ const PromptGrid = (props) => {
     }
     async function UnsavePromptsRequest(event) {
         try{
-            setSavePrompts(false);
+            // props.PublicPrompt.isFavourite = false;
+            // setSavePrompts(false);
             const res = await deleting_favourite_prompt(localStorage.getItem('mongodb_userid'),props.PublicPrompt._id);
+            props.adding_favourite_prompt2(props.PublicPrompt._id,false);
             event.preventDefault();
         } catch (error) {
             props.handleExceptionError(error);
@@ -52,7 +55,7 @@ const PromptGrid = (props) => {
 
                                         <div className="prompt-user-text">
                                             <h4>@{props.PublicPrompt.user.username}</h4>
-                                            <p>{moment(props.PublicPrompt.createdAt, "YYYYMMDD, HH:mm:ss").fromNow(true)} ago.</p>
+                                            <p>{moment(props.PublicPrompt.updatedAt, "YYYYMMDD, HH:mm:ss").fromNow(true)} ago.</p>
                                         </div>
                                 </Link>
                                 :
@@ -65,7 +68,7 @@ const PromptGrid = (props) => {
 
                                             <div className="prompt-user-text">
                                                 <h4>@{props.PublicPrompt.user.username}</h4>
-                                                <p>{moment(props.PublicPrompt.createdAt, "YYYYMMDD, HH:mm:ss").fromNow(true)} ago.</p>
+                                                <p>{moment(props.PublicPrompt.updatedAt, "YYYYMMDD, HH:mm:ss").fromNow(true)} ago.</p>
                                             </div>
                                     </Link>
                             }
@@ -73,7 +76,7 @@ const PromptGrid = (props) => {
                         <div className="card-top-right">
                             <div className="save_toggle">
                                 {props.PublicPrompt.user._id != localStorage.getItem('mongodb_userid')?
-                                    (SavePrompts? 
+                                    (props.PublicPrompt.isFavourite? 
                                         <button className="saved_prompt save_btn" onClick={UnsavePromptsRequest.bind(this)}>
                                             <img src="../assets/img/Bookmark.svg" alt="" />
                                         </button>
@@ -92,8 +95,8 @@ const PromptGrid = (props) => {
                         <div className="prompt-content">
                             <h3>{props.PublicPrompt.title}</h3>
                             <div className="prompt--description">
-                                {props.PublicPrompt.template?
-                                    <p>{props.PublicPrompt.template.substr(0, 220)}</p>
+                                {props.PublicPrompt.teaser?
+                                    <p>{props.PublicPrompt.teaser.substr(0, 220)}</p>
                                 :
                                     <></>
                                 }

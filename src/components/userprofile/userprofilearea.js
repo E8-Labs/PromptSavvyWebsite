@@ -39,6 +39,54 @@ const UserProfileArea = (props) => {
             setUserImageError('Please select an image file.');
         }
     };
+
+    // const handleFileChange = (event) => {
+    //     setUserImageError('');
+    //     const file = event.target.files[0];
+        
+    //     if (file && file.type.startsWith('image/')) {
+    //         if (file.size <= 2 * 1024 * 1024) {
+    //             const reader = new FileReader();
+    //             reader.onload = (event) => {
+    //                 const img = new Image();
+    //                 img.onload = () => {
+    //                     const canvas = document.createElement('canvas');
+    //                     const maxWidth = 800; // Set your desired maximum width
+    //                     const maxHeight = 600; // Set your desired maximum height
+    //                     let width = img.width;
+    //                     let height = img.height;
+    
+    //                     if (width > height) {
+    //                         if (width > maxWidth) {
+    //                             height *= maxWidth / width;
+    //                             width = maxWidth;
+    //                         }
+    //                     } else {
+    //                         if (height > maxHeight) {
+    //                             width *= maxHeight / height;
+    //                             height = maxHeight;
+    //                         }
+    //                     }
+    
+    //                     canvas.width = width;
+    //                     canvas.height = height;
+    //                     const ctx = canvas.getContext('2d');
+    //                     ctx.drawImage(img, 0, 0, width, height);
+    //                     const base64String = canvas.toDataURL('image/jpeg', 0.9); // Adjust quality here (0.8 is 80% quality)
+    
+    //                     props.ChangeBannerImage(base64String);
+    //                 };
+    //                 img.src = event.target.result;
+    //             };
+    //             reader.readAsDataURL(file);
+    //         } else {
+    //             setUserImageError('Please select a file smaller than 2MB.');
+    //         }
+    //     } else {
+    //         setUserImageError('Please select an image file.');
+    //     }
+    // };
+    
     
     return (
         <>
@@ -90,7 +138,7 @@ const UserProfileArea = (props) => {
                                         <div className="user_info_wrap">
                                             <div className="unfollow_btn">
                                             </div>
-                                            <p style={{cursor:'pointer'}} onClick={ShowCommunity.bind(this)} >{props.FollowersLength} Followers</p>
+                                            <p style={{cursor:'pointer'}} onClick={ShowCommunity.bind(this)} >{props.FollowersLength} Follower{props.FollowersLength > 1 && 's' }</p>
                                             
                                                 <ul>
                                                     {props.SocialLinks.Instagram?

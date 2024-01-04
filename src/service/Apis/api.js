@@ -294,3 +294,35 @@ export const logging_out = async (id) => {
         return error;
     }
 };
+
+export const seen_notification = async (id) => {
+    try {
+        let data = JSON.stringify({
+            "body": {
+                "type": "reading_a_notification",
+                "id" : id
+            }
+        });
+        const response = await axios.post(process.env.REACT_APP_API_BASEURL, data);
+        return response;
+    } catch (error) {
+        return error;
+    }
+};
+
+export const fetch_all_loggedin_user_notifications = async (id, page) => {
+    try {
+        let data = JSON.stringify({
+            "body": {
+                "type": "fetch_all_loggedin_user_notifications",
+                "id":id,
+                "limit" : process.env.REACT_APP_PER_PAGE_RECORD,
+                "page":page
+            }
+        });
+        const response = await axios.post(process.env.REACT_APP_API_BASEURL, data);
+        return response;
+    } catch (error) {
+        return error;
+    }
+};

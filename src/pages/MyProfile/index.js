@@ -60,7 +60,6 @@ const MyProfile = () => {
 
     async function unfollowers_request(){ }
     async function followers_request(){}
-    async function ShowCommunity(){}
 
     function handleExceptionError(error) {
         setExceptionError(ExceptionError => [
@@ -117,8 +116,15 @@ const MyProfile = () => {
                 FormYoutubeLink,
                 FormWebsiteLink
             );
-            if(res.data.statusCode == 200){
-                handleExceptionSuccessMessages('Profile upaded successfully!')
+            if(res.status == 200){
+                if(res.data.statusCode == 200){
+                    setUserName(FormName);
+                    handleExceptionSuccessMessages('Profile upaded successfully!')
+                }else{
+                    handleExceptionError(JSON.parse(res.data.body));
+                }
+            }else{
+                handleExceptionError({message : res.errorMessage});
             }
         } catch (error) {
             setShowSaveButton(true);
@@ -141,10 +147,17 @@ const MyProfile = () => {
             const res = await adding_user_to_wishlist(
                 WaitListEmail
             );
-            if(res.data.statusCode == 200){
-                var data = JSON.parse(res.data.body);
-                handleExceptionSuccessMessages(data.message)
-                setWaitListEmail('');
+
+            if(res.status == 200){
+                if(res.data.statusCode == 200){
+                    var data = JSON.parse(res.data.body);
+                    handleExceptionSuccessMessages(data.message)
+                    setWaitListEmail('');
+                }else{
+                    handleExceptionError(JSON.parse(res.data.body));
+                }
+            }else{
+                handleExceptionError({message : res.errorMessage});
             }
         } catch (error) {
             handleExceptionError(error);
@@ -166,6 +179,7 @@ const MyProfile = () => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const base64String = event.target.result;
+                    console.log('base64String',base64String);
                     setUserImage(base64String);
                 };
                 reader.readAsDataURL(file);
@@ -178,13 +192,70 @@ const MyProfile = () => {
         }
     }
 
+    // async function handleFileChange(event) {
+    //     setUserImageError('');
+    //     const file = event.target.files[0];
+    //     if (file && file.type.startsWith('image/')) {
+    //         if (file && file.size <= 2 * 1024 * 1024) {
+    //             const reader = new FileReader();
+    //             reader.onload = async (event) => {
+    //                 const image = new Image();
+    //                 image.src = event.target.result;
+    
+    //                 image.onload = () => {
+    //                     const canvas = document.createElement('canvas');
+    //                     const ctx = canvas.getContext('2d');
+    
+    //                     let width = image.width;
+    //                     let height = image.height;
+    
+    //                     let offsetX = 0;
+    //                     let offsetY = 0;
+    
+    //                     if (width > height) {
+    //                         offsetX = (width - height) / 2;
+    //                         width = height;
+    //                     } else {
+    //                         offsetY = (height - width) / 2;
+    //                         height = width;
+    //                     }
+    
+    //                     canvas.width = 100;
+    //                     canvas.height = 100;
+    
+    //                     ctx.drawImage(image, offsetX, offsetY, width, height, 0, 0, 100, 100);
+    
+    //                     const base64String = canvas.toDataURL('image/jpeg', 0.9);
+    
+    //                     setUserImage(base64String);
+    //                     setShowSaveButton(true);
+    //                 };
+    //             };
+    //             reader.readAsDataURL(file);
+    //         } else {
+    //             setUserImageError('Please select a file smaller than 2MB.');
+    //         }
+    //     } else {
+    //         setUserImageError('Please select an image file.');
+    //     }
+    // }
+    
+    
+    
+
     async function fetchMoreUserPrompts(){
         try {
             prompt_list_page++;
             const res1 = await fetching_prompts_of_any_userid(localStorage.getItem('mongodb_userid'),localStorage.getItem('mongodb_userid'),'recent', prompt_list_page );
-            if(res1.data.statusCode){
-                var data1 = JSON.parse(res1.data.body);
-                setUserPrompts([...UserPrompts, ...data1.user_prompts]);
+            if(res1.status == 200){
+                if(res1.data.statusCode == 200){
+                    var data1 = JSON.parse(res1.data.body);
+                    setUserPrompts([...UserPrompts, ...data1.user_prompts]);
+                }else{
+                    handleExceptionError(JSON.parse(res1.data.body));
+                }
+            }else{
+                handleExceptionError({message : res1.errorMessage});
             }
         } catch (error) {
             handleExceptionError(error);
@@ -208,15 +279,27 @@ const MyProfile = () => {
             setActivityFollowingFollowers(active);
             if(active == 'followers'){
                 const res = await followers_list(localStorage.getItem('mongodb_userid'),community_list_page);
-                if(res.data.statusCode == 200){
-                    var data = JSON.parse(res.data.body);
+                if(res.status == 200){
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
                     setFollowingFollowersUserList(data.subscribers);
+                    }else{
+                        handleExceptionError(JSON.parse(res.data.body));
+                    }
+                }else{
+                    handleExceptionError({message : res.errorMessage});
                 }
             }else{
                 const res = await following_list(localStorage.getItem('mongodb_userid'),0);
-                if(res.data.statusCode == 200){
-                    var data = JSON.parse(res.data.body);
-                    setFollowingFollowersUserList(data.following);
+                if(res.status == 200){
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList(data.following);
+                    }else{
+                        handleExceptionError(JSON.parse(res.data.body));
+                    }
+                }else{
+                    handleExceptionError({message : res.errorMessage});
                 }
             }
         } catch (error) {
@@ -231,15 +314,27 @@ const MyProfile = () => {
             setFollowingFollowerSearchAlgo(value);        
             if(ActivityFollowingFollowers == 'followers'){
                 const res = await search_followers(localStorage.getItem('mongodb_userid'),value,0);
-                if(res.data.statusCode == 200){
-                    var data = JSON.parse(res.data.body);
-                    setFollowingFollowersUserList(data.followers_search);
+                if(res.status == 200){
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList(data.followers_search);
+                    }else{
+                        handleExceptionError(JSON.parse(res.data.body));
+                    }
+                }else{
+                    handleExceptionError({message : res.errorMessage});
                 }
             }else{
                 const res = await search_following(localStorage.getItem('mongodb_userid'),value,0);
-                if(res.data.statusCode == 200){
-                    var data = JSON.parse(res.data.body);
-                    setFollowingFollowersUserList(data.following_search);
+                if(res.status == 200){
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList(data.following_search);
+                    }else{
+                        handleExceptionError(JSON.parse(res.data.body));
+                    }
+                }else{
+                    handleExceptionError({message : res.errorMessage});
                 }
             }
         } catch (error) {
@@ -250,16 +345,28 @@ const MyProfile = () => {
 
     async function logout(){
         const res = await logging_out(localStorage.getItem('mongodb_userid'));
-        if(res.data.statusCode == 200){
-            localStorage.removeItem('mongodb_userid');
-            window.location.reload();
+        if(res.status == 200){
+            if(res.data.statusCode == 200){
+                localStorage.removeItem('mongodb_userid');
+                window.location.replace('https://chat.openai.com/?redirectto='+process.env.REACT_APP_BASE_URL);
+            }else{
+                handleExceptionError(JSON.parse(res.data.body));
+            }
+        }else{
+            handleExceptionError({message : res.errorMessage});
         }
     }
 
     async function ChangeBannerImage(file){
         setBannerImage(file);
         const res = await upload_user_banner(localStorage.getItem('mongodb_userid'),file);
-        if(res.data.statusCode == 200){
+        if(res.status == 200){
+            if(res.data.statusCode == 200){                
+            }else{
+                handleExceptionError(JSON.parse(res.data.body));
+            }
+        }else{
+            handleExceptionError({message : res.errorMessage});
         }
     }
     
@@ -292,57 +399,77 @@ const MyProfile = () => {
                 if(localStorage.getItem('mongodb_userid')){
 
                     const res = await fetch_user_profile_information(localStorage.getItem('mongodb_userid'));
-                    
-                    if(res.data){
+
+                    if(res.status == 200){
                         if(res.data.statusCode == 200){
-                            var data = JSON.parse(res.data.body);
-
-                            console.log('res.data',data)
-
-                            if(data.profile_info.username){
-                                setUserName(data.profile_info.username);
-                                setFormName(data.profile_info.username);
-                            }
-                            if(data.profile_info.email){
-                                setFormEmail(data.profile_info.email);
-                            }   
-                            if(data.profile_info.subscribers){
-                                setFollowersLength(data.profile_info.subscribers.length);
-                            }
-                            if(data.profile_info.social_links){
-                                setSocialLinks(data.profile_info.social_links);
-                                if(data.profile_info.social_links.Instagram){
-                                    setFormInstagramLink(data.profile_info.social_links.Instagram);
-                                }
-                                if(data.profile_info.social_links.Youtube){
-                                    setFormYoutubeLink(data.profile_info.social_links.Youtube);
-                                    
-                                }
-                                if(data.profile_info.social_links.Website){
-                                    setFormWebsiteLink(data.profile_info.social_links.Website);
-                                }
-                                if(data.profile_info.image){
-                                    setUserImage(data.profile_info.image);
+                            if(res.data){
+                                if(res.data.statusCode == 200){
+                                    var data = JSON.parse(res.data.body);
+        
+                                    if(data.profile_info.username){
+                                        setUserName(data.profile_info.username);
+                                        setFormName(data.profile_info.username);
+                                    }
+                                    if(data.profile_info.email){
+                                        setFormEmail(data.profile_info.email);
+                                    }   
+                                    if(data.profile_info.subscribers){
+                                        setFollowersLength(data.profile_info.subscribers.length);
+                                    }
+                                    if(data.profile_info.social_links){
+                                        setSocialLinks(data.profile_info.social_links);
+                                        if(data.profile_info.social_links.Instagram){
+                                            setFormInstagramLink(data.profile_info.social_links.Instagram);
+                                        }
+                                        if(data.profile_info.social_links.Youtube){
+                                            setFormYoutubeLink(data.profile_info.social_links.Youtube);
+                                            
+                                        }
+                                        if(data.profile_info.social_links.Website){
+                                            setFormWebsiteLink(data.profile_info.social_links.Website);
+                                        }
+                                        if(data.profile_info.image){
+                                            setUserImage(data.profile_info.image);
+                                        }
+                                    }
                                 }
                             }
                         }else{
+                            handleExceptionError(JSON.parse(res.data.body));
                         }
+                    }else{
+                        handleExceptionError({message : res.errorMessage});
                     }
+                    
+                    
 
                     const res1 = await fetching_prompts_of_any_userid(localStorage.getItem('mongodb_userid'),localStorage.getItem('mongodb_userid'),'recent', prompt_list_page );
-                    if(res1.data.statusCode){
-                        var data1 = JSON.parse(res1.data.body);
-                        setUserPrompts(data1.user_prompts)
+                    if(res1.status == 200){
+                        if(res1.data.statusCode == 200){
+                            var data1 = JSON.parse(res1.data.body);
+                            setUserPrompts(data1.user_prompts)
+                        }else{
+                            handleExceptionError(JSON.parse(res1.data.body));
+                        }
+                    }else{
+                        handleExceptionError({message : res1.errorMessage});
                     }
 
                     const res2 = await fetch_user_banner(localStorage.getItem('mongodb_userid'));
-                    if(res2.data.statusCode){
-                        var data2 = JSON.parse(res2.data.body);
-                        if(data2.banner){
-                            setBannerImage(data2.banner);
+
+                    if(res2.status == 200){
+                        if(res2.data.statusCode == 200){
+                            var data2 = JSON.parse(res2.data.body);
+                            if(data2.banner){
+                                setBannerImage(data2.banner);
+                            }else{
+                                setBannerImage('/assets/img/banner-bg.png');
+                            }
                         }else{
-                            setBannerImage('/assets/img/banner-bg.png');
+                            handleExceptionError(JSON.parse(res2.data.body));
                         }
+                    }else{
+                        handleExceptionError({message : res2.errorMessage});
                     }
                 }
             } catch (error) {
@@ -365,29 +492,53 @@ const MyProfile = () => {
             if(FollowingFollowerSearchAlgo != ''){
                 if(ActivityFollowingFollowers == 'followers'){
                     const res = await search_followers(localStorage.getItem('mongodb_userid'),FollowingFollowerSearchAlgo,community_list_page);
-                    if(res.data.statusCode == 200){
-                        var data = JSON.parse(res.data.body);
-                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.followers_search]);
+                    if(res.status == 200){
+                        if(res.data.statusCode == 200){
+                            var data = JSON.parse(res.data.body);
+                            setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.followers_search]);
+                        }else{
+                            handleExceptionError(JSON.parse(res.data.body));
+                        }
+                    }else{
+                        handleExceptionError({message : res.errorMessage});
                     }
                 }else{
                     const res = await search_following(localStorage.getItem('mongodb_userid'),FollowingFollowerSearchAlgo,community_list_page);
-                    if(res.data.statusCode == 200){
-                        var data = JSON.parse(res.data.body);
-                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following_search]);
+                    if(res.status == 200){
+                        if(res.data.statusCode == 200){
+                            var data = JSON.parse(res.data.body);
+                            setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following_search]);
+                        }else{
+                            handleExceptionError(JSON.parse(res.data.body));
+                        }
+                    }else{
+                        handleExceptionError({message : res.errorMessage});
                     }
                 }                
             }else{
                 if(ActivityFollowingFollowers == 'followers'){
                     const res = await followers_list(localStorage.getItem('mongodb_userid'),community_list_page);
-                    if(res.data.statusCode == 200){
-                        var data = JSON.parse(res.data.body);
-                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.subscribers]);
+                    if(res.status == 200){
+                        if(res.data.statusCode == 200){
+                            var data = JSON.parse(res.data.body);
+                            setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.subscribers]);
+                        }else{
+                            handleExceptionError(JSON.parse(res.data.body));
+                        }
+                    }else{
+                        handleExceptionError({message : res.errorMessage});
                     }
                 }else{
-                    const res = await following_list(localStorage.getItem('mongodb_userid'),community_list_page);
-                    if(res.data.statusCode == 200){
-                        var data = JSON.parse(res.data.body);
-                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following]);
+                    const res = await following_list(localStorage.getItem('mongodb_userid'),community_list_page);                    
+                    if(res.status == 200){
+                        if(res.data.statusCode == 200){
+                            var data = JSON.parse(res.data.body);
+                            setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following]);
+                        }else{
+                            handleExceptionError(JSON.parse(res.data.body));
+                        }
+                    }else{
+                        handleExceptionError({message : res.errorMessage});
                     }
                 }
             }
@@ -397,12 +548,22 @@ const MyProfile = () => {
         }
     }
 
+    async function adding_favourite_prompt2(_id,status){
+        const setPublicPrompt = UserPrompts.map(item => {
+            if (item._id === _id) {
+              return { ...item, isFavourite: status };
+            }
+            return item;
+          });
+        setUserPrompts(setPublicPrompt)
+    }
+
 
     return (
         <>
             <ErrorSnackbar errorMessages={ExceptionError} onClearErrors={clearErrors} />
             <SuccessSnackbar successMessages={successMessages} onclearSuccess={clearSuccess} />
-            <Header userprofileimage={UserImage} />
+            <Header userprofileimage={UserImage} notificationshow={true} />
                 <main className="main_content-start" id="scrollableDiv" style={{ height: '100vh', overflow: "auto" }}>
                 <InfiniteScroll
                     dataLength={UserPrompts.length}
@@ -455,7 +616,7 @@ const MyProfile = () => {
                                                 </div> */}
                                                 <div className="row">                                                
                                                     {UserPrompts.map((item, index) => (
-                                                        <PromptGrid PublicPrompt={item} key={index} UserImage={UserImage} handleExceptionError={handleExceptionError} handleExceptionSuccessMessages={handleExceptionSuccessMessages} />
+                                                        <PromptGrid PublicPrompt={item} key={index} UserImage={UserImage} handleExceptionError={handleExceptionError} handleExceptionSuccessMessages={handleExceptionSuccessMessages} adding_favourite_prompt2={adding_favourite_prompt2} />
                                                     ))}
                                                 </div>
                                             </div>
@@ -469,7 +630,7 @@ const MyProfile = () => {
                                                                         <button className="nav-link active" id="v-pills-Personal-tab" data-bs-toggle="pill" data-bs-target="#v-pills-Personal" type="button" role="tab" aria-controls="v-pills-Personal" aria-selected="true">Personal Information</button>
                                                                     </div>
                                                                     <div className="logout-option">
-                                                                        <Link href="#" onClick={logout}>Logout</Link>
+                                                                        <Link href="#" id="logout_trigger" onClick={logout}>Logout</Link>
                                                                     </div>
                                                                 </div>
                                                                 <div className="v-tab-contents">
@@ -529,7 +690,7 @@ const MyProfile = () => {
                                                                                                 <input style={{width:'100%'}} onChange={e => setFormYoutubeLink(e.target.value)} placeholder="Youtube Link" type="url" name="Youtube Link" value={FormYoutubeLink} />
                                                                                             </p>
                                                                                         :
-                                                                                            <h5><Link style={{color:'#fff',opacity:'1'}} to={FormYoutubeLink}>{FormYoutubeLink}</Link> <span className="edit_inf" onClick={() => {setEditFormYoutubeLink(true);setShowSaveButton(true);}} ><img src="../assets/img/Edit.svg" alt="" /></span></h5>
+                                                                                            <h5><Link style={{color:'#fff',opacity:'1'}} to={FormYoutubeLink}>{FormYoutubeLink.slice(0, 75)}</Link> <span className="edit_inf" onClick={() => {setEditFormYoutubeLink(true);setShowSaveButton(true);}} ><img src="../assets/img/Edit.svg" alt="" /></span></h5>
                                                                                         }
                                                                                     </div>
                                                                                     <div className="single-inf">
@@ -539,7 +700,7 @@ const MyProfile = () => {
                                                                                                 <input style={{width:'100%'}} onChange={e => setFormInstagramLink(e.target.value)} placeholder="Instagram Link" type="url" name="Instagram Link" value={FormInstagramLink} />
                                                                                             </p>
                                                                                         :
-                                                                                            <h5><Link style={{color:'#fff',opacity:'1'}} to={FormInstagramLink}>{FormInstagramLink}</Link> <span className="edit_inf"  onClick={() => {setEditFormInstagramLink(true);setShowSaveButton(true);}} ><img src="../assets/img/Edit.svg" alt="" /></span></h5>
+                                                                                            <h5><Link style={{color:'#fff',opacity:'1'}} to={FormInstagramLink}>{FormInstagramLink.slice(0, 75)}</Link> <span className="edit_inf"  onClick={() => {setEditFormInstagramLink(true);setShowSaveButton(true);}} ><img src="../assets/img/Edit.svg" alt="" /></span></h5>
                                                                                         }
                                                                                     </div>
                                                                                     <div className="single-inf">
@@ -549,7 +710,7 @@ const MyProfile = () => {
                                                                                                 <input style={{width:'100%'}} onChange={e => setFormWebsiteLink(e.target.value)} placeholder="Website Link" type="url" name="Website Link" value={FormWebsiteLink} />
                                                                                             </p>
                                                                                         :
-                                                                                            <h5><Link style={{color:'#fff',opacity:'1'}} to={FormWebsiteLink}>{FormWebsiteLink}</Link> <span className="edit_inf"  onClick={() => {setEditFormWebsiteLink(true); setShowSaveButton(true);}} ><img src="../assets/img/Edit.svg" alt="" /></span></h5>
+                                                                                            <h5><Link style={{color:'#fff',opacity:'1'}} to={FormWebsiteLink}><span>{FormWebsiteLink.slice(0, 75)}</span></Link> <span className="edit_inf"  onClick={() => {setEditFormWebsiteLink(true); setShowSaveButton(true);}} ><img src="../assets/img/Edit.svg" alt="" /></span></h5>
                                                                                         }
                                                                                     </div>
                                                                                     <div className="single-inf">

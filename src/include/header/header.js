@@ -1,16 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import InstalledExtension from '../../components/Extension/installed';
 import SideBar from '../sidebar/sidebar';
-import { fetch_user_profile_information, fetch_loggedin_user_notifications } from '../../service/Apis/api';
+import Loader from "./loader.js";
+
+import { fetch_user_profile_information, fetch_loggedin_user_notifications, seen_notification } from '../../service/Apis/api';
+
 import moment from 'moment-timezone';
 moment.tz.setDefault('Etc/UTC');
 
 const Header = (props) => {
+    const navigate = useNavigate();
     const [Loginstatus, setLoginstatus] = useState(true);
     const [UserImage, setUserImage] = useState('');
     const [Notifications, setNotifications] = useState([]);
     const [NotificationsCount, setNotificationsCount] = useState(0);
+
+    async function seennotification(_id) {
+        setNotifications(prevData => prevData.map(item =>
+            item._id === _id ? { ...item, read: true } : item
+        ));
+        setNotificationsCount(prevCount => prevCount - 1);
+        await seen_notification(_id)        
+    }
 
     useEffect(() => {
         var IntervalCount = 0;
@@ -27,6 +39,7 @@ const Header = (props) => {
                         setLoginstatus(true)
                         fetchData();
                     }else{
+                        window.location.replace('https://chat.openai.com/?redirectto='+process.env.REACT_APP_BASE_URL);
                         setLoginstatus(false)
                     }
                 }
@@ -37,30 +50,35 @@ const Header = (props) => {
             }
         }, 500);   
 
-        
-
         async function fetchData() {
             try {
                 if (localStorage.getItem('mongodb_userid') != undefined && localStorage.getItem('mongodb_userid') != null) {
                     setLoginstatus(true)
 
+                    
+
                     const res = await fetch_user_profile_information(localStorage.getItem('mongodb_userid'));
-                    if (res.data) {
-                        if (res.data.statusCode == 200) {
+                    if(res.status == 200){
+                        if(res.data.statusCode == 200){
                             var data = JSON.parse(res.data.body);
                             if (data.profile_info.username) {
                                 setUserImage(data.profile_info.image);
-                            }
-                        } else {
+                            } 
+                        }else{
+                            
                         }
+                    }else{
+                        
                     }
                     const res1 = await fetch_loggedin_user_notifications(localStorage.getItem('mongodb_userid'), 1);
-                    if (res1.data) {
-                        if (res1.data.statusCode == 200) {
+                    if(res1.status == 200){
+                        if(res1.data.statusCode == 200){
                             var data1 = JSON.parse(res1.data.body);
-                            setNotifications(data1.notifications);
-                            setNotificationsCount(data1.notifications_count)
+                            setNotifications(data1.unread_notifications);
+                            setNotificationsCount(data1.unread_notifications_count)
+                        }else{
                         }
+                    }else{
                     }
                 } else {
                     setLoginstatus(false)
@@ -72,8 +90,21 @@ const Header = (props) => {
             clearInterval(interval);
         };
     }, []);
+
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Simulate page loading for 2 seconds
+    useEffect(() => {
+        const timer = setTimeout(() => {
+        setIsLoading(false);
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, []);
     return (
         <>
+            {isLoading && (
+                <Loader />
+            )}
             {Loginstatus == false ? <InstalledExtension /> : ''}
             <header>
                 <div className="container-fluid">
@@ -85,27 +116,36 @@ const Header = (props) => {
                                 </div>
                                 <div className="header-right justify-content-end">
                                     <div className="header-right-wrap">
-                                        <div className="notification_box">
-                                            <Link to="#notification_trigger" data-bs-toggle="collapse" aria-expanded="false" aria-controls="notification_trigger"><span>{NotificationsCount}</span><img src="../assets/img/notification.svg" alt="" /></Link>
-                                            <div className="notifications-dropdown collapse" id="notification_trigger">
-                                                <div className="dropdown-title">
-                                                    <h4>Notifications</h4>
-                                                    <Link to="/notification">View All</Link>
-                                                </div>
-                                                <div className="recent-notification">
-                                                    <ul>
-                                                        {Notifications.map((item, index) => (
-                                                            <li key={index}>
-                                                                <Link to="#" >
-                                                                    {item.about}
-                                                                    <p>{moment(item.createdAt, "YYYYMMDD, HH:mm:ss").fromNow(true)} ago.</p>
-                                                                </Link>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
+                                        {props.notificationshow &&
+                                            <div className="notification_box">
+                                                <Link to="#notification_trigger" data-bs-toggle="collapse" aria-expanded="false" aria-controls="notification_trigger"><span>{NotificationsCount}</span><img src="../assets/img/notification.svg" alt="" /></Link>
+                                                <div className="notifications-dropdown collapse" id="notification_trigger">
+                                                    <div className="dropdown-title">
+                                                        <h4>Notifications</h4>
+                                                        <Link to="/notification">View All</Link>
+                                                    </div>
+                                                    <div className="recent-notification">
+                                                        <ul>
+                                                            {Notifications.map((item, index) => ( 
+                                                                <li key={index}>
+                                                                    {item.read?
+                                                                        <Link to="#" style={{ background: '#071b15' }}>
+                                                                            {item.about}
+                                                                            <p>{moment(item.updatedAt, "YYYYMMDD, HH:mm:ss").fromNow(true)} ago.</p>
+                                                                        </Link>
+                                                                        :
+                                                                        <Link to="#" onClick={() => {seennotification(item._id)}} style={{ background: 'transparent'}}>
+                                                                            {item.about}
+                                                                            <p>{moment(item.updatedAt, "YYYYMMDD, HH:mm:ss").fromNow(true)} ago.</p>
+                                                                        </Link>
+                                                                    }
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        }
                                         <div className="profile_box">
                                             {UserImage ?
                                                 (props.userprofileimage?

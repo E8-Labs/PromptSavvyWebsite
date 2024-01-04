@@ -104,13 +104,17 @@ const Channel = () => {
         try {
             prompt_list_page++;
             const res = await fetching_prompts_of_any_userid(CurrentMongodbUserID,localStorage.getItem('mongodb_userid'),search_algo_type, prompt_list_page);
-            if(res.data){
+            if(res.status == 200){
                 if(res.data.statusCode == 200){
                     var data = JSON.parse(res.data.body);
                     if(data.user_prompts){
                         setUserPrompts([...UserPrompts, ...data.user_prompts]);
-                    }                
+                    }
+                }else{
+                    handleExceptionError(JSON.parse(res.data.body));
                 }
+            }else{
+                handleExceptionError({message : res.errorMessage});
             }
         } catch (error) {
             handleExceptionError(error);
@@ -121,8 +125,15 @@ const Channel = () => {
     async function followers_request(){
         try {
             const res = await subscribing_a_user(localStorage.getItem('mongodb_userid') , CurrentMongodbUserID);
-            if(res.data.statusCode == 200){
-                setFollowStatus(true);
+            if(res.status == 200){
+                if(res.data.statusCode == 200){
+                    setFollowersLength(prevLength => prevLength + 1);
+                    setFollowStatus(true);
+                }else{
+                    handleExceptionError(JSON.parse(res.data.body));
+                }
+            }else{
+                handleExceptionError({message : res.errorMessage});
             }
         } catch (error) {
             handleExceptionError(error);
@@ -132,8 +143,15 @@ const Channel = () => {
     async function unfollowers_request(){
         try {
             const res = await unsubscribing_a_user(localStorage.getItem('mongodb_userid') , CurrentMongodbUserID);
-            if(res.data.statusCode == 200){
-                setFollowStatus(false);
+            if(res.status == 200){
+                if(res.data.statusCode == 200){
+                    setFollowersLength(prevLength => prevLength - 1);
+                    setFollowStatus(false);
+                }else{
+                    handleExceptionError(JSON.parse(res.data.body));
+                }
+            }else{
+                handleExceptionError({message : res.errorMessage});
             }
         } catch (error) {
             handleExceptionError(error);
@@ -144,6 +162,17 @@ const Channel = () => {
         setShowCommunityListStatus(true);
         ActivityFollowingFollowersChange('followers');
     }
+    async function adding_favourite_prompt2(_id,status){
+        const setPublicPrompt = UserPrompts.map(item => {
+            if (item._id === _id) {
+              return { ...item, isFavourite: status };
+            }
+            return item;
+          });
+        setUserPrompts(setPublicPrompt)
+    }
+
+    
 
     async function CloseCommunity(){
         setShowCommunityListStatus(false);
@@ -156,15 +185,27 @@ const Channel = () => {
             community_list_page = 1;
             if(active == 'followers'){
                 const res = await followers_list(CurrentMongodbUserID,community_list_page);
-                if(res.data.statusCode == 200){
-                    var data = JSON.parse(res.data.body);
+                if(res.status == 200){
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
                     setFollowingFollowersUserList(data.subscribers);
+                    }else{
+                        handleExceptionError(JSON.parse(res.data.body));
+                    }
+                }else{
+                    handleExceptionError({message : res.errorMessage});
                 }
             }else{
                 const res = await following_list(CurrentMongodbUserID,community_list_page);
-                if(res.data.statusCode == 200){
-                    var data = JSON.parse(res.data.body);
-                    setFollowingFollowersUserList(data.following);
+                if(res.status == 200){
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        setFollowingFollowersUserList(data.following);
+                    }else{
+                        handleExceptionError(JSON.parse(res.data.body));
+                    }
+                }else{
+                    handleExceptionError({message : res.errorMessage});
                 }
             }
         } catch (error) {
@@ -199,13 +240,17 @@ const Channel = () => {
     async function get_user_prompts(mongodb_userid){
         try {
             const res = await fetching_prompts_of_any_userid(mongodb_userid,localStorage.getItem('mongodb_userid'),search_algo_type,'0');
-            if(res.data){
+            if(res.status == 200){
                 if(res.data.statusCode == 200){
                     var data = JSON.parse(res.data.body);
                     if(data.user_prompts){
                         setUserPrompts(data.user_prompts);
-                    }                
+                    }
+                }else{
+                    handleExceptionError(JSON.parse(res.data.body));
                 }
+            }else{
+                handleExceptionError({message : res.errorMessage});
             }
         } catch (error) {
             handleExceptionError(error);
@@ -229,16 +274,21 @@ const Channel = () => {
     async function GetDefaultFollowStatus(mongodb_userid){
         try {
             const res = await check_if_subscribed(mongodb_userid,localStorage.getItem('mongodb_userid'));
-            if(res.data){
-                if(res.data.statusCode == 200){
-                    var data = JSON.parse(res.data.body);
-                    if(data.status_info){
-                        if(data.status_info.isSubscribed){
-                            setFollowStatus(data.status_info.isSubscribed)
+            if(res.status == 200){
+                if(res.data.statusCode){
+                    if(res.data.statusCode == 200){
+                        var data = JSON.parse(res.data.body);
+                        if(data.status_info){
+                            if(data.status_info.isSubscribed){
+                                setFollowStatus(data.status_info.isSubscribed)
+                            }
                         }
-                    } 
-                }else{
+                    }else{
+                        handleExceptionError(JSON.parse(res.data.body));
+                    }
                 }
+            }else{
+                handleExceptionError({message : res.errorMessage});
             }
         } catch (error) {
             handleExceptionError(error);
@@ -263,7 +313,7 @@ const Channel = () => {
                 setCurrentMongodbUserID(mongodb_userid);
 
                 const res = await fetch_user_profile_information(mongodb_userid);
-                if(res.data){
+                if(res.status == 200){
                     if(res.data.statusCode == 200){
                         var data = JSON.parse(res.data.body);
                         if(data.profile_info.username){
@@ -279,19 +329,28 @@ const Channel = () => {
                             setUserImage(data.profile_info.image);
                         }
                     }else{
+                        handleExceptionError(JSON.parse(res.data.body));
                     }
+                }else{
+                    handleExceptionError({message : res.errorMessage});
                 }
                 search_algo_type = 'recent';
                 await get_user_prompts(mongodb_userid);
                 await GetDefaultFollowStatus(mongodb_userid);
                 const res2 = await fetch_user_banner(mongodb_userid);
-                if(res2.data.statusCode){
-                    var data2 = JSON.parse(res2.data.body);
-                    if(data2.banner){
-                        setBannerImage(data2.banner);
+                if(res2.status == 200){
+                    if(res2.data.statusCode == 200){
+                        var data2 = JSON.parse(res2.data.body);
+                        if(data2.banner){
+                            setBannerImage(data2.banner);
+                        }else{
+                            setBannerImage('/assets/img/banner-bg.png');
+                        }
                     }else{
-                        setBannerImage('/assets/img/banner-bg.png');
+                        handleExceptionError(JSON.parse(res2.data.body));
                     }
+                }else{
+                    handleExceptionError({message : res2.errorMessage});
                 }
             }
         } catch (error) {
@@ -306,29 +365,53 @@ const Channel = () => {
             if(FollowingFollowerSearchAlgo != ''){
                 if(ActivityFollowingFollowers == 'followers'){
                     const res = await search_followers(CurrentMongodbUserID,FollowingFollowerSearchAlgo,community_list_page);
-                    if(res.data.statusCode == 200){
-                        var data = JSON.parse(res.data.body);
-                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.followers_search]);
+                    if(res.status == 200){
+                        if(res.data.statusCode == 200){
+                            var data = JSON.parse(res.data.body);
+                            setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.followers_search]);
+                        }else{
+                            handleExceptionError(JSON.parse(res.data.body));
+                        }
+                    }else{
+                        handleExceptionError({message : res.errorMessage});
                     }
                 }else{
                     const res = await search_following(CurrentMongodbUserID,FollowingFollowerSearchAlgo,community_list_page);
-                    if(res.data.statusCode == 200){
-                        var data = JSON.parse(res.data.body);
-                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following_search]);
+                    if(res.status == 200){
+                        if(res.data.statusCode == 200){
+                            var data = JSON.parse(res.data.body);
+                            setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following_search]);
+                        }else{
+                            handleExceptionError(JSON.parse(res.data.body));
+                        }
+                    }else{
+                        handleExceptionError({message : res.errorMessage});
                     }
                 }                
             }else{
                 if(ActivityFollowingFollowers == 'followers'){
                     const res = await followers_list(CurrentMongodbUserID,community_list_page);
-                    if(res.data.statusCode == 200){
-                        var data = JSON.parse(res.data.body);
-                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.subscribers]);
+                    if(res.status == 200){
+                        if(res.data.statusCode == 200){
+                            var data = JSON.parse(res.data.body);
+                            setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.subscribers]);
+                        }else{
+                            handleExceptionError(JSON.parse(res.data.body));
+                        }
+                    }else{
+                        handleExceptionError({message : res.errorMessage});
                     }
                 }else{
                     const res = await following_list(CurrentMongodbUserID,community_list_page);
-                    if(res.data.statusCode == 200){
-                        var data = JSON.parse(res.data.body);
-                        setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following]);
+                    if(res.status == 200){
+                        if(res.data.statusCode == 200){
+                            var data = JSON.parse(res.data.body);
+                            setFollowingFollowersUserList([...FollowingFollowersUserList, ...data.following]);
+                        }else{
+                            handleExceptionError(JSON.parse(res.data.body));
+                        }
+                    }else{
+                        handleExceptionError({message : res.errorMessage});
                     }
                 }
             }
@@ -343,7 +426,7 @@ const Channel = () => {
         <>
             <ErrorSnackbar errorMessages={ExceptionError} onClearErrors={clearErrors} />
             <SuccessSnackbar successMessages={successMessages} onclearSuccess={clearSuccess} />
-            <Header userprofileimage="" />
+            <Header userprofileimage="" notificationshow={true} />
             <main className="main_content-start" id="scrollableDiv" style={{ height: '100vh', overflow: "auto" }}>
                 <InfiniteScroll
                     dataLength={UserPrompts.length}
@@ -376,7 +459,7 @@ const Channel = () => {
                             </div>
                             <div className="row">
                                 {UserPrompts.map((item, index) => (
-                                    <PromptGrid PublicPrompt={item} key={index} UserImage={UserImage} />
+                                    <PromptGrid PublicPrompt={item} key={index} UserImage={UserImage} adding_favourite_prompt2={adding_favourite_prompt2} />
                                 ))}
                             </div>
                         </div>

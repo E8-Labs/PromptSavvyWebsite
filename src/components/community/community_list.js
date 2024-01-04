@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 
 const CommunityList = (props) => {
 
-    console.log('props.FollowingFollowersUserList', props.FollowingFollowersUserList);
-
     const [SearchValue, setSearchValue] = useState('');
     function CloseCommunity(event) {
         props.CloseCommunity();
