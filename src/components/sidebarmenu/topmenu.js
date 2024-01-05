@@ -5,8 +5,8 @@ const TopMenu = () => {
         <>
             <div className="sidebar_menu">
                 <ul>
-                    <li><Link to="#"><img src="../assets/img/Category.svg" alt="" />Dashboard</Link></li>
-                    <li><Link to="#"><img src="../assets/img/chatgpt.svg" alt="" />ChatGPT</Link></li>
+                    <li><Link to="/"><img src="../assets/img/Category.svg" alt="" />Dashboard</Link></li>
+                    <li><Link target="_blank" to="https://chat.openai.com/"><img src="../assets/img/chatgpt.svg" alt="" />ChatGPT</Link></li>
                 </ul>
             </div>
         </>

@@ -19,13 +19,18 @@ const CommunityList = (props) => {
         props.ActivityFollowingFollowersChange('following');
         event.preventDefault();
     }
-    function FollowingFollowersSearch(event) {
-        props.FollowingFollowersSearch(SearchValue);
-        event.preventDefault();
+    function FollowingFollowersSearch(val) {
+        props.FollowingFollowersSearch(val);
+        // event.preventDefault();
     }
     function fetchMoreCommunity() {
         props.fetchMoreCommunity();
     }
+
+    const handleChange = (e) => {
+        setSearchValue(e.target.value);
+        FollowingFollowersSearch(e.target.value); // Call FollowingFollowersSearch function here
+    };
 
     return (
         <>
@@ -70,8 +75,8 @@ const CommunityList = (props) => {
                                             <li className="nav-item">
                                                 <div className="d-flex justify-content-center">
                                                     <div className="search">
-                                                        <input type="text" className="search-input" placeholder="Quick Search" name="Quick Search" onChange={e => setSearchValue(e.target.value)} value={SearchValue} />
-                                                        <Link to="" onClick={FollowingFollowersSearch.bind(this)} className="search-icon">
+                                                        <input type="text" className="search-input" placeholder="Quick Search" name="Quick Search" onChange={handleChange} value={SearchValue} />
+                                                        <Link to="" className="search-icon">
                                                             <i className="fal fa-search"></i>
                                                         </Link>
                                                     </div>
